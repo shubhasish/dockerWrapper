@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"name":"master",
+    "role":"manager",
+    "driver":"virtualbox"},
+    {"name":"worker",
+    "driver":"virtualbox",
+    "role":"slave"}
+  ]
+
+}
