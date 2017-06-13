@@ -1,11 +1,18 @@
 {
-  "nodes": [
-    {"name":"master",
-    "role":"manager",
-    "driver":"virtualbox"},
-    {"name":"worker",
-    "driver":"virtualbox",
-    "role":"slave"}
-  ]
-
+  "master": {
+    "role": "manager",
+    "driver": "virtualbox"
+  },
+  "worker": {
+    "driver": "virtualbox",
+    "role": "slave"
+  },
+  "node1": {
+    "driver": "virtualbox",
+    "role": "slave"
+  },
+  "node2": {
+    "driver": "virtualbox",
+    "role": "slave"
+  }
 }

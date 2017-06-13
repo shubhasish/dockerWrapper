@@ -1,0 +1,35 @@
+version: '2'
+services:
+  EMQ:
+    image: emq
+    container_name: emq
+    network_mode: "host"
+#    ports:
+#     - "8125:8125/udp"
+    volumes:
+     - /etc/telegraf:/etc/telegraf
+  Spark:
+    image: sequenceiq/spark
+    container_name: spark
+    network_mode: "host"
+#    ports:
+#     - "8086:8086"
+#     - "8083:8083"
+    volumes:
+     - /etc/influxdb:/etc/influxdb
+    command: -config /etc/influxdb/influxdb.conf
+  Ignite:
+    image: apacheignite/ignite
+    container_name: ignite
+    network_mode: "host"
+#    ports:
+#     - "3000:3000"
+  Mongo:
+    image: mongo
+    container_name: mongo
+    network_mode: "host"
+#    ports:
+#     - "9092:9092"
+    volumes:
+     - /etc/kapacitor:/etc/kapacitor
+     - /tmp/kapacitor:/tmp
