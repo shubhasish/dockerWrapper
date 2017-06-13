@@ -26,5 +26,5 @@ Formatt of the config file **name:<property>**
   }
 }
 ```
-###Composer Folder
+### Composer Folder
 Place your deployment scripts **docker-compose.yaml** in your composer folder. The application will deploy it for you.
