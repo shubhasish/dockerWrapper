@@ -1,4 +1,5 @@
 from machine import Machine
+import os
 
 cmdJson={"join-token_manager":"docker swarm join-token manager",
          "join-token_worker":"docker swarm join-token worker",
@@ -12,8 +13,12 @@ class dockerMachine:
         self.client = Machine(path=self.clientUrl)
 
     def createMachine(self,name,driver="virtualbox"):
-        return self.client.create(name=name,driver=driver)
-
+        try:
+            self.client.create(name=name,driver=driver)
+            return True
+        except Exception as e:
+            print e
+            os._exit(1)
     def listAvailableMachines(self):
         return set([x['Name'] for x in self.client.ls() if len(x['Name']) > 0])
 
@@ -34,6 +39,9 @@ class dockerMachine:
 
     def getIp(self,name):
         return self.client.ip(name)
+
+    def getURL(self,name):
+        return self.client.url(name)
 
     def getSwarmNodes(self,name):
         return self.client.ssh(name,cmd=cmdJson['nodes_list'])
