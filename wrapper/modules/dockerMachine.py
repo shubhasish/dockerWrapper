@@ -5,7 +5,14 @@ cmdJson={"join-token_manager":"docker swarm join-token manager",
          "join-token_worker":"docker swarm join-token worker",
          "join":"docker swarm join --token %s %s",
          "init": "docker swarm init --advertise-addr %s",
-         "nodes_list":"docker node ls"}
+         "nodes_list":"docker node ls",
+         "portainer":"docker service create \
+--name portainer \
+--publish 9000:9000 \
+--constraint 'node.role == manager' \
+--mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock \
+portainer/portainer \
+-H unix:///var/run/docker.sock"}
 
 class dockerMachine:
     def __init__(self):
@@ -51,3 +58,10 @@ class dockerMachine:
             self.client.ssh(name,cmd=cmd)
         except Exception as e:
             print e
+    def deploy_portainer(self,name):
+        try:
+            self.client.ssh(name,cmd=cmdJson['portainer'])
+            return True
+        except Exception as e:
+            print e
+            return False

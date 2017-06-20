@@ -6,13 +6,5 @@
   "worker": {
     "driver": "virtualbox",
     "role": "slave"
-  },
-  "node1": {
-    "driver": "virtualbox",
-    "role": "slave"
-  },
-  "node2": {
-    "driver": "virtualbox",
-    "role": "slave"
   }
 }

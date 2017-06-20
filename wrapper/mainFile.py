@@ -5,9 +5,10 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from config import CONFIG_FORMATT
-from wrapper.components.dockerMachine import dockerMachine
-from wrapper.components.fileFormatter import File
-from wrapper.components.swarm import Swarm
+from wrapper.modules.dockerMachine import dockerMachine
+from wrapper.modules.fileFormatter import File
+from wrapper.modules.swarm import Swarm
+from wrapper.modules.network import Network
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -34,7 +35,7 @@ def createMachines(createList):
             config['role'] = configuration[node]['role']
             config['driver'] = configuration[node]['driver']
             MASTER[node] =copy.deepcopy(config)
-        print MASTER
+
 
     else:
         print "No new machines to be created"
@@ -90,12 +91,10 @@ else:
 
 
 ###### SWARM addition
-print createList,swarmList
 swarmList = createList.union(swarmList)
 if swarm_init:
     print "Swarm already initialized"
     print "Adding new nodes to swarm cluster"
-    print swarmList
     for nodes in swarmList:
         swarm = Swarm(nodes, MASTER[nodes]['url'])
         if configuration[nodes]['role'].lower() == "manager":
@@ -105,13 +104,14 @@ if swarm_init:
             swarm.joinSwarm(ip=swarmIp, token=workerToken,listen=MASTER[nodes]['ip'])
 else:
     print "Initializing Swarm..."
-    print swarmList
     master = [x for x in swarmList if MASTER[x]['role'].lower() == "manager"][0]
 
     swarmMaster = Swarm(name=master,url=MASTER[master]['url'])
     swarmMaster.swarmInit(MASTER[master]['ip'])
     MASTER[master]['swarm'] = True
     MASTER[master]['init'] = True
+    swarmMaster.create_network('icarus','overlay')
+    dockerMachine.deploy_portainer(master)
     masterDetails = dockerMachine.checkSwarm(master)
     managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
     workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
