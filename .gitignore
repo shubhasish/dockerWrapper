@@ -2,4 +2,6 @@
 .idea/
 *.pyc
 shape.memory
-
+mainFile.spec
+dist/
+build/
