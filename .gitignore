@@ -5,3 +5,6 @@ shape.memory
 mainFile.spec
 dist/
 build/
+*.jar
+*.sh
+*.xml

@@ -1,6 +1,6 @@
 import docker
 from tls import TLS
-
+from wrapper.config import dir_path
 class Swarm:
     def __init__(self,name,url):
         tls = TLS()
@@ -22,7 +22,6 @@ class Swarm:
     def joinSwarm(self,ip,token,listen):
         ip = ip + ':2377'
         listen = listen + ":2377"
-        print ip
         try:
             output = self.client.swarm.join(remote_addrs=[ip],join_token=token,listen_addr=listen)
             return True
@@ -37,7 +36,31 @@ class Swarm:
         except Exception as e:
             print e
             return False
+    def deploy(self):
+        try:
+            images = self.client.images.get('127.0.0.1:5000/ignite')
 
+            if images:
+                self.client.images.remove('127.0.0.1:5000/ignite')
+                self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/ignite',
+                                         dockerfile='ignite_dockerfile')
+                self.client.images.push('127.0.0.1:5000/ignite')
+        except Exception as e:
+            print e
+            if "Not Found" in str(e.message):
+
+                self.client.images.build(path=dir_path+'/composer',tag='127.0.0.1:5000/ignite',dockerfile='ignite_dockerfile')
+                self.client.images.push('127.0.0.1:5000/ignite')
+    def buildImage(self):
+        try:
+            self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/ignite',
+                                     dockerfile='ignite_dockerfile')
+            self.client.images.push('127.0.0.1:5000/ignite')
+            # self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/emq',
+            #                      dockerfile='Dockerfile')
+            # self.client.images.push('127.0.0.1:5000/emq')
+        except Exception as e:
+            print e
 #     def deploy_portnair(self):
 #         image = 'portainer/portainer'
 #         name = 'portainer'
@@ -57,3 +80,4 @@ class Swarm:
 #
 # client = Swarm(name='master',url='tcp://192.168.99.100:2376')
 # client.deploy_portnair()
+

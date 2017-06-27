@@ -2,7 +2,7 @@ version: '3'
 services:
   EMQ:
     build: .
-    image: emq:latest
+    image: 127.0.0.1:5000/emq
     container_name: emq
     network_mode: "host"
 #    ports:
@@ -19,18 +19,18 @@ services:
 #    volumes:
 #     - /etc/influxdb:/etc/influxdb
 #    command: -config /etc/influxdb/influxdb.conf
-#  Ignite:
-#    image: apacheignite/ignite
-#    container_name: ignite
-#    network_mode: "host"
+  Ignite:
+    image: 127.0.0.1:5000/ignite
+    container_name: ignite
+    network_mode: "host"
 #    ports:
 #     - "3000:3000"
-#  Mongo:
-#    image: mongo
-#    container_name: mongo
-#    network_mode: "host"
-#    ports:
-#     - "9092:9092"
+  Mongo:
+    image: mongo
+    container_name: mongo
+    network_mode: "host"
+    ports:
+     - "27017:27017"
 #    volumes:
 #     - /etc/kapacitor:/etc/kapacitor
 #     - /tmp/kapacitor:/tmp

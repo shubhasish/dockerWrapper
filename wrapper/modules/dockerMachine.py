@@ -1,6 +1,6 @@
 from machine import Machine
 import os
-
+from wrapper.config import dir_path
 cmdJson={"join-token_manager":"docker swarm join-token manager",
          "join-token_worker":"docker swarm join-token worker",
          "join":"docker swarm join --token %s %s",
@@ -12,7 +12,10 @@ cmdJson={"join-token_manager":"docker swarm join-token manager",
 --constraint 'node.role == manager' \
 --mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock \
 portainer/portainer \
--H unix:///var/run/docker.sock"}
+-H unix:///var/run/docker.sock",
+         "registry":"docker service create --name registry --publish 5000:5000 registry:2",
+         "stack_deploy":"docker stack deploy --compose-file ~/docker-compose.yml emq",
+         "stack_remove":"docker stack rm emq"}
 
 class dockerMachine:
     def __init__(self):
@@ -65,3 +68,36 @@ class dockerMachine:
         except Exception as e:
             print e
             return False
+    def deploy_registry(self,name):
+        try:
+            self.client.ssh(name, cmd=cmdJson['registry'])
+            return True
+        except Exception as e:
+            print e
+            return False
+
+    def deploy_stack(self,name):
+        try:
+            self.client.ssh(name,cmd=cmdJson['stack_deploy'])
+            return True
+        except Exception as e:
+            print e
+            return False
+    def remove_stack(self,name):
+        try:
+            self.client.ssh(name,cmd=cmdJson['stack_remove'])
+            return True
+        except Exception as e:
+            print e
+            return False
+
+    def remove_nodes(self,name):
+        try:
+            self.client.rm(machine=name)
+        except Exception as e:
+            print e
+    def copy_composeFile(self):
+        try:
+            self.client.scp(source=dir_path+'/composer/docker-compose.yml',destination='master:~')
+        except Exception as e:
+            print e
