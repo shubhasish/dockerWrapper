@@ -5,11 +5,13 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from config import CONFIG_FORMATT
-from wrapper.modules.dockerMachine import dockerMachine
-from wrapper.modules.fileFormatter import File
-from wrapper.modules.swarm import Swarm
+from modules.dockerMachine import dockerMachine
+from modules.fileFormatter import File
+from modules.swarm import Swarm
+
+from components.removal_manager import RemovalManager
+
 import sys
-from wrapper.modules.network import Network
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -41,10 +43,10 @@ def createMachines(createList):
     else:
         print "No new machines to be created"
 
+number_of_argument = len(sys.argv)
+arguments = sys.argv
 
-
-argument = sys.argv[1]
-if argument == "deploy":
+if arguments[1] == "deploy":
     try:
         MASTER = file.readFile('shape.memory')
         existingCluster = set(MASTER.keys())
@@ -60,18 +62,30 @@ if argument == "deploy":
     dockerMachine.deploy_stack(master)
     os._exit(0)
 
-if argument == "reset":
-    try:
-        MASTER = file.readFile('shape.memory')
-        existingCluster = set(MASTER.keys())
-    except Exception as e:
-        print e
-    for nodes in existingCluster:
-        dockerMachine.remove_nodes(nodes)
-    os.remove('shape.memory')
-    os._exit(0)
+if arguments[1].lower() == "wrapup":
+    rm = RemovalManager()
+    if number_of_argument > 2:
+        if arguments[2] == "help":
+            print "\nUsage: wrapper wrapUp [OPTIONS] \n\n" \
+                  "Command to remove single node or multiple nodes from cluster\n\n" \
+                  "Option:\n" \
+                  "help-: show usage details\n" \
+                  "all-: remove all nodes from cluster\n" \
+                  "node/nodes[NAME]-: nodes name comma separated\n"
 
-if argument == "create":
+        else:
+            rm.removeNodes(arguments[2:])
+        os._exit(0)
+    else:
+        print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details" \
+
+        os._exit(0)
+    # remove = RemovalManager()
+    # remove.
+    # os.remove('shape.memory')
+    # os._exit(0)
+
+if arguments[1] == "create":
     ###### File Reading
     try:
         print "Starting the wrapper Application"
@@ -136,6 +150,7 @@ if argument == "create":
         print "Initializing Swarm..."
         master = [x for x in swarmList if MASTER[x]['role'].lower() == "manager"][0]
 
+        print MASTER
         swarmMaster = Swarm(name=master,url=MASTER[master]['url'])
         swarmMaster.swarmInit(MASTER[master]['ip'])
         MASTER[master]['swarm'] = True

@@ -1,6 +1,6 @@
 from machine import Machine
 import os
-from wrapper.config import dir_path
+from config import dir_path
 cmdJson={"join-token_manager":"docker swarm join-token manager",
          "join-token_worker":"docker swarm join-token worker",
          "join":"docker swarm join --token %s %s",

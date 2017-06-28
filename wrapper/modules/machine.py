@@ -49,7 +49,10 @@ class Machine:
         """
         cmd = [self.path] + cmd
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        for line in iter(p.stdout.readline, b''):
+            print line
         stdout, stderr = p.communicate()
+
         error_code = p.wait()
 
         if raise_error and error_code:
@@ -229,7 +232,7 @@ class Machine:
         self._run(cmd)
         return True
 
-    def rm(self, machine="default", force=False):
+    def rm(self, machine="default", force=False,blocking=True):
         """
         Remove the specified machine.
 
@@ -241,7 +244,11 @@ class Machine:
         """
         f = ["-f"] if force else []
         cmd = ["rm", "-y"] + f + [machine]
-        self._run(cmd)
+        if blocking:
+            stdout, stderr, errorcode = self._run_blocking(cmd)
+        else:
+            stdout, stderr, errorcode = self._run(cmd)
+        #return errorcode
         return True
 
     def env(self, machine="default"):
@@ -365,7 +372,7 @@ class Machine:
         stdout, _, _ = self._run(cmd)
         return stdout.split()
 
-    def ssh(self, machine, cmd):
+    def ssh(self, machine, cmd,blocking=False):
         """
         Run a command on a machine through docker-machine ssh
 
@@ -377,5 +384,10 @@ class Machine:
             List[str]: output of the ssh command
         """
         ssh_cmd = ['ssh', machine, cmd]
-        stdout, _, _ = self._run(ssh_cmd)
+        if blocking:
+            stdout, stderr, errorcode = self._run_blocking(ssh_cmd)
+        else:
+            stdout, stderr, errorcode = self._run(ssh_cmd)
+        #return errorcode
+
         return stdout.split()
