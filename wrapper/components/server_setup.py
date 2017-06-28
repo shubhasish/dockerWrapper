@@ -57,6 +57,8 @@ class Server:
                 masterList = self.createNodes(requirements)
             else:
                 print "No new machines to be created"
+        swarm = Swarm_Handler()
+        swarm.checkNswarm()
         return masterList
 
     def createNodes(self,createList):
@@ -74,7 +76,7 @@ class Server:
             if (self.config_file[node]['driver'] == "manager"):
                 master.append((node,docker.getURL(node),docker.getIp(node)))
             self.MASTER[node] = copy.deepcopy(config)
-        self.file.writeFile(self.MASTER)
+            self.file.writeFile(self.MASTER)
         return master
 
 

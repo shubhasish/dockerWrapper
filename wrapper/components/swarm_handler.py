@@ -1,11 +1,15 @@
 from modules.swarm import Swarm
-from modules.dockerMachine import dockerMachine
 from modules.fileFormatter import File
 from copy import deepcopy
 from threading import Thread
+from config import DM_URL
+from modules.machine import Machine
 import os
-class Swarm_Handler:
 
+cmdJson={"join-token_manager":"docker swarm join-token manager",
+         "join-token_worker":"docker swarm join-token worker"}
+
+class Swarm_Handler:
     def __init__(self):
         self.STATE = dict()
         self.file = File()
@@ -14,6 +18,7 @@ class Swarm_Handler:
         self.init = False
         self.mainMaster = None
         self.swarmList = set()
+        self.manager = Machine(path=DM_URL)
         # try:
         #     print "Reading Configuration File"
         #     self.config_file = self.file.readFile('config.json')
@@ -27,12 +32,11 @@ class Swarm_Handler:
         except Exception as e:
             pass
 
-        self.dockerMachine = dockerMachine()
-
     def checkNswarm(self):
         for node in self.STATE.keys():
-            if self.STATE[node]['role'].lower() == "master":
+            if self.STATE[node]['role'].lower() == "manager":
                 if self.STATE[node]['swarm']:
+
                     self.swarmList.add(node)
                     if self.STATE[node]['init']:
                         self.init = True
@@ -44,6 +48,7 @@ class Swarm_Handler:
                     self.swarmList.add(node)
                 else:
                     self.slaveSet.add(node)
+
         if len(self.swarmList) > 0:
             print "Swarm has already been initialized with %s"%self.mainMaster
             print "Following Nodes are in swarm:"
@@ -67,7 +72,6 @@ class Swarm_Handler:
                 masterThread.join()
                 slaveThread.join()
                 self.file.writeFile(self.STATE)
-
             else:
                 print "No new nodes to be added to the swarm cluster."
         else:
@@ -113,7 +117,15 @@ class Swarm_Handler:
                 print e
                 os._exit(1)
     def getJoinToken(self,master):
-        masterDetails = self.dockerMachine.checkSwarm(master)
+        masterDetails = self.checkSwarm(master)
         managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
         workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
         return (managerToken,workerToken)
+    
+    def checkSwarm(self,name):
+        try:
+            managerToken = self.manager.ssh(name,cmd=cmdJson['join-token_manager'],logging=False)
+            workerToken = self.manager.ssh(name,cmd=cmdJson['join-token_worker'],logging=False)
+            return (True,managerToken,workerToken)
+        except Exception as e:
+            return (False,e.message)

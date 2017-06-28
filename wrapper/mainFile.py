@@ -11,6 +11,7 @@ from modules.swarm import Swarm
 
 from components.removal_manager import RemovalManager
 from components.server_setup import Server
+from components.swarm_handler import Swarm_Handler
 import sys
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -62,7 +63,7 @@ if arguments[1] == "deploy":
     dockerMachine.deploy_stack(master)
     os._exit(0)
 
-if arguments[1].lower() == "wrapup":
+elif arguments[1].lower() == "wrapup":
     rm = RemovalManager()
     if number_of_argument > 2:
         if arguments[2] == "help" or arguments[2] == "--help":
@@ -80,12 +81,7 @@ if arguments[1].lower() == "wrapup":
         print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details" \
 
         os._exit(0)
-    # remove = RemovalManager()
-    # remove.
-    # os.remove('shape.memory')
-    # os._exit(0)
-
-if arguments[1] == "create":
+elif arguments[1] == "creata":
 
     if number_of_argument > 2:
         if arguments[2] == "help" or arguments[2] == "--help":
@@ -107,8 +103,12 @@ if arguments[1] == "create":
         setup = Server()
         setup.create_cluster()
         os._exit(0)
+elif arguments[1].lower() == "swarmit":
+    swarm = Swarm_Handler()
+    swarm.checkNswarm()
+    os._exit(0)
 
-
+if arguments[1] == "create":
     ###### File Reading
     try:
         print "Starting the wrapper Application"
@@ -125,7 +125,7 @@ if arguments[1] == "create":
 
     ######
 
-    if len(existingCluster)==0:
+    if len(existingCluster) == 0:
         print "No nodes are present in this cluster"
         createList = requiredMachines
         createMachines(createList)
@@ -133,18 +133,17 @@ if arguments[1] == "create":
     else:
         print "Following nodes are present in the cluster"
         for node in existingCluster:
-            print "%s \t %s"%(node,configuration[node]['role'])
+            print "%s \t %s" % (node, configuration[node]['role'])
         createList = requiredMachines.difference(existingCluster)
         createMachines(createList)
-        swarmList= set([x for x in existingCluster if MASTER[x]['swarm'] == False])
+        swarmList = set([x for x in existingCluster if MASTER[x]['swarm'] == False])
         masterNode = [x for x in existingCluster if MASTER[x]['init'] == True]
-    ##### Swarm Initialization
+        ##### Swarm Initialization
 
         if len(masterNode) > 0:
             print "Swarm has been initialized"
 
-
-            print "Obtaining join token for %s"%masterNode[0]
+            print "Obtaining join token for %s" % masterNode[0]
             output = dockerMachine.checkSwarm(masterNode[0])
             managerToken = [x for x in output[1] if 'SWMTKN' in x][0]
             workerToken = [x for x in output[2] if 'SWMTKN' in x][0]
@@ -153,9 +152,6 @@ if arguments[1] == "create":
         else:
             print "Swarm hasn't been initialized"
             swarm_init = False
-
-
-
 
     ###### SWARM addition
     swarmList = createList.union(swarmList)
@@ -166,19 +162,20 @@ if arguments[1] == "create":
             swarm = Swarm(nodes, MASTER[nodes]['url'])
             if configuration[nodes]['role'].lower() == "manager":
 
-                swarm.joinSwarm(ip=swarmIp,token=managerToken,listen=MASTER[nodes]['ip'])
+                swarm.joinSwarm(ip=swarmIp, token=managerToken, listen=MASTER[nodes]['ip'])
             else:
-                swarm.joinSwarm(ip=swarmIp, token=workerToken,listen=MASTER[nodes]['ip'])
+                swarm.joinSwarm(ip=swarmIp, token=workerToken, listen=MASTER[nodes]['ip'])
     else:
         print "Initializing Swarm..."
         master = [x for x in swarmList if MASTER[x]['role'].lower() == "manager"][0]
-        swarmMaster = Swarm(name=master,url=MASTER[master]['url'])
+        swarmMaster = Swarm(name=master, url=MASTER[master]['url'])
         swarmMaster.swarmInit(MASTER[master]['ip'])
         MASTER[master]['swarm'] = True
         MASTER[master]['init'] = True
-        swarmMaster.create_network('icarus','overlay')
+        swarmMaster.create_network('icarus', 'overlay')
         dockerMachine.deploy_portainer(master)
         dockerMachine.deploy_registry(master)
+        print "There"
         masterDetails = dockerMachine.checkSwarm(master)
         managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
         workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
@@ -187,13 +184,14 @@ if arguments[1] == "create":
             swarm = Swarm(nodes, MASTER[nodes]['url'])
             if configuration[nodes]['role'].lower() == "manager":
 
-                swarm.joinSwarm(ip=MASTER[master]['ip'], token=managerToken,listen=MASTER[nodes]['ip'])
+                swarm.joinSwarm(ip=MASTER[master]['ip'], token=managerToken, listen=MASTER[nodes]['ip'])
                 MASTER[nodes]['swarm'] = True
             else:
-                swarm.joinSwarm(ip=MASTER[master]['ip'], token=workerToken,listen=MASTER[nodes]['ip'])
+                swarm.joinSwarm(ip=MASTER[master]['ip'], token=workerToken, listen=MASTER[nodes]['ip'])
                 MASTER[nodes]['swarm'] = True
+        print "I am here"
         swarmMaster.buildImage()
         dockerMachine.copy_composeFile()
         dockerMachine.deploy_stack(master)
-    if len(MASTER.keys())>0:
+    if len(MASTER.keys()) > 0:
         file.writeFile(MASTER)
