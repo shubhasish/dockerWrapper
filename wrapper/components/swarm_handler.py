@@ -1,6 +1,6 @@
-from ..modules.swarm import Swarm
-from ..modules.dockerMachine import dockerMachine
-from ..modules.fileFormatter import File
+from modules.swarm import Swarm
+from modules.dockerMachine import dockerMachine
+from modules.fileFormatter import File
 from copy import deepcopy
 from threading import Thread
 import os

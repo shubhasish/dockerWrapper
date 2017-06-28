@@ -34,8 +34,8 @@ class dockerMachine:
 
     def checkSwarm(self,name):
         try:
-            managerToken = self.client.ssh(name,cmd=cmdJson['join-token_manager'])
-            workerToken = self.client.ssh(name,cmd=cmdJson['join-token_worker'])
+            managerToken = self.client.ssh(name,cmd=cmdJson['join-token_manager'],logging=False)
+            workerToken = self.client.ssh(name,cmd=cmdJson['join-token_worker'],logging=False)
             return (True,managerToken,workerToken)
         except Exception as e:
             return (False,e.message)

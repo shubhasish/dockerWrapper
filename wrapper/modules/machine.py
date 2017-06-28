@@ -38,7 +38,7 @@ class Machine:
             raise RuntimeError("cmd returned error %s: %s" % (error_code, stderr.decode('utf-8').strip()))
         return stdout.decode('utf-8'), stderr.decode('utf-8'), error_code
 
-    def _run_blocking(self, cmd, raise_error=True):
+    def _run_logging(self, cmd, raise_error=True):
         """
         Run a docker-machine command, optionally raise error if error code != 0
         Args:
@@ -89,7 +89,7 @@ class Machine:
         match = self._match(cmd, regexp)
         return match.group(1)
 
-    def create(self, name, driver='virtualbox', blocking=True):
+    def create(self, name, driver='virtualbox', logging=True):
         """
         Create a docker machine using the provided name and driver
         NOTE: This takes a loooooong time
@@ -97,14 +97,14 @@ class Machine:
         Args:
             name (str): the name to give to the machine (must be unique)
             driver: the driver to use to create the machine
-            blocking (bool): should wait for completion before exiting
+            logging (bool): should wait for completion before exiting
 
         Returns:
             int: error code from the run
         """
         cmd = ['create', '--driver', driver, name]
-        if blocking:
-            stdout, stderr, errorcode = self._run_blocking(cmd)
+        if logging:
+            stdout, stderr, errorcode = self._run_logging(cmd)
         else:
             stdout, stderr, errorcode = self._run(cmd)
         return errorcode
@@ -232,7 +232,7 @@ class Machine:
         self._run(cmd)
         return True
 
-    def rm(self, machine="default", force=False,blocking=True):
+    def rm(self, machine="default", force=False,logging=True):
         """
         Remove the specified machine.
 
@@ -244,8 +244,8 @@ class Machine:
         """
         f = ["-f"] if force else []
         cmd = ["rm", "-y"] + f + [machine]
-        if blocking:
-            stdout, stderr, errorcode = self._run_blocking(cmd)
+        if logging:
+            stdout, stderr, errorcode = self._run_logging(cmd)
         else:
             stdout, stderr, errorcode = self._run(cmd)
         #return errorcode
@@ -372,7 +372,7 @@ class Machine:
         stdout, _, _ = self._run(cmd)
         return stdout.split()
 
-    def ssh(self, machine, cmd,blocking=False):
+    def ssh(self, machine, cmd,logging=True):
         """
         Run a command on a machine through docker-machine ssh
 
@@ -384,8 +384,8 @@ class Machine:
             List[str]: output of the ssh command
         """
         ssh_cmd = ['ssh', machine, cmd]
-        if blocking:
-            stdout, stderr, errorcode = self._run_blocking(ssh_cmd)
+        if logging:
+            stdout, stderr, errorcode = self._run_logging(ssh_cmd)
         else:
             stdout, stderr, errorcode = self._run(ssh_cmd)
         #return errorcode

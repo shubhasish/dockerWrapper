@@ -1,16 +1,22 @@
 import os
 import copy
-from ..config import CONFIG_FORMATT
-from ..modules.fileFormatter import File
-from ..modules.dockerMachine import dockerMachine
+from config import CONFIG_FORMATT
+from modules.fileFormatter import File
+from modules.dockerMachine import dockerMachine
 from swarm_handler import Swarm_Handler
+from config import DM_URL
+from modules.machine import Machine
+from config import dir_path
+
+
 class Server:
-    def __init__(self,path):
+    def __init__(self,path=dir_path+"/config.json"):
         self.MASTER = dict()
         self.file = File()
+        self.manager = Machine(path=DM_URL)
         try:
             print "Reading Configuration File"
-            self.config_file = self.file.readFile('config.json')
+            self.config_file = self.file.readFile(path)
         except Exception as e:
             print e
             print "Exiting Cluster Creation Process"
@@ -27,16 +33,17 @@ class Server:
         return set(self.config_file.keys())
 
     def create_cluster(self):
-        print "Getting machines to be created"
+        masterList=[]
+        print "\nGetting machines to be created"
         self.required_nodes = self.get_requirement()
-        print "Getting existing nodes in the cluster"
+        print "\nGetting existing nodes in the cluster"
         self.existing_nodes = self.get_cluster()
         if len(self.existing_nodes) == 0:
             print "No existing nodes in the cluster"
-            print "Following nodes will be created"
+            print "\n\nFollowing nodes will be created"
             for node in self.required_nodes:
                 print "%s \t %s" % (node, self.config_file[node]['role'])
-            print "Creating Nodes...."
+
             masterList = self.createNodes(self.required_nodes)
         else:
             print "Following nodes are present in the cluster"
@@ -50,13 +57,15 @@ class Server:
                 masterList = self.createNodes(requirements)
             else:
                 print "No new machines to be created"
+        return masterList
 
     def createNodes(self,createList):
         docker = dockerMachine()
         master = []
         for node in createList:
-            print "Creating %s...." % node
-            docker.createMachine(name=node, driver=self.config_file[node]['driver'])
+            print "\nCreating %s...." % node
+            self.manager.create(name=node, driver=self.config_file[node]['driver'])
+            #docker.createMachine(name=node, driver=self.config_file[node]['driver'])
             config = CONFIG_FORMATT
             config['url'] = docker.getURL(node)
             config['ip'] = docker.getIp(node)

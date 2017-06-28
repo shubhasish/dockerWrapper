@@ -10,7 +10,7 @@ from modules.fileFormatter import File
 from modules.swarm import Swarm
 
 from components.removal_manager import RemovalManager
-
+from components.server_setup import Server
 import sys
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -65,7 +65,7 @@ if arguments[1] == "deploy":
 if arguments[1].lower() == "wrapup":
     rm = RemovalManager()
     if number_of_argument > 2:
-        if arguments[2] == "help":
+        if arguments[2] == "help" or arguments[2] == "--help":
             print "\nUsage: wrapper wrapUp [OPTIONS] \n\n" \
                   "Command to remove single node or multiple nodes from cluster\n\n" \
                   "Option:\n" \
@@ -86,6 +86,29 @@ if arguments[1].lower() == "wrapup":
     # os._exit(0)
 
 if arguments[1] == "create":
+
+    if number_of_argument > 2:
+        if arguments[2] == "help" or arguments[2] == "--help":
+            print "\nUsage: wrapper create [OPTIONS] \n\n" \
+                  "Command to create cluster\n\n" \
+                  "Option:\n" \
+                  "help: show usage details\n" \
+                  "-p --path: path to config file\n"
+
+        elif arguments[2]=="-p" or arguments[2]=="--path":
+            if os.path.isfile(arguments[3]) and ".json" in arguments[3]:
+                setup = Server(path=arguments[3])
+                setup.create_cluster()
+            else:
+                print "Not a valid file, provide a valid file path"
+        os._exit(0)
+    else:
+        print "\nNo path to file is provided. Reading configuartion from default 'config.json' file"
+        setup = Server()
+        setup.create_cluster()
+        os._exit(0)
+
+
     ###### File Reading
     try:
         print "Starting the wrapper Application"
@@ -149,8 +172,6 @@ if arguments[1] == "create":
     else:
         print "Initializing Swarm..."
         master = [x for x in swarmList if MASTER[x]['role'].lower() == "manager"][0]
-
-        print MASTER
         swarmMaster = Swarm(name=master,url=MASTER[master]['url'])
         swarmMaster.swarmInit(MASTER[master]['ip'])
         MASTER[master]['swarm'] = True
