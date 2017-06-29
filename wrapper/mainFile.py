@@ -81,7 +81,7 @@ elif arguments[1].lower() == "wrapup":
         print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details" \
 
         os._exit(0)
-elif arguments[1] == "creata":
+elif arguments[1] == "create":
 
     if number_of_argument > 2:
         if arguments[2] == "help" or arguments[2] == "--help":
@@ -108,7 +108,7 @@ elif arguments[1].lower() == "swarmit":
     swarm.checkNswarm()
     os._exit(0)
 
-if arguments[1] == "create":
+if arguments[1] == "creata":
     ###### File Reading
     try:
         print "Starting the wrapper Application"
