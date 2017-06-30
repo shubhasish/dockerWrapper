@@ -5,30 +5,8 @@ from copy import deepcopy
 
 
 class Services:
-    image = ""
-    command = ""
-    args = ""
-    constraints = ""
-    container_labels = ""
-    endpoint_spec = ""
-    env = ""
-    hostname = ""
-    labels = ""
-    log_driver = ""
-    log_driver_options = ""
-    mode = ""
-    mounts = ""
-    name = ""
-    networks = ""
-    resources = ""
-    restart_policy = ""
-    secrets = ""
-    stop_grace_period = ""
-    update_config = ""
-    user = ""
-    workdir = ""
 
-    def __init__(self,name,url,deploymentFile='../composer/docker-compose.yml'):
+    def __init__(self,deploymentFile='../composer/docker-compose.yml'):#,name,url,deploymentFile='../composer/docker-compose.yml'):
 
 ################### Variables......
         self.build = ""
@@ -37,17 +15,18 @@ class Services:
         self.buildArgs = dict()
 ########### Initialization
         tls = TLS()
-        self.tlsConfig = tls.getTLSconfig(name)
+        # self.tlsConfig = tls.getTLSconfig(name)
         self.stream = open(deploymentFile, 'r')
-        self.client = docker.DockerClient(base_url=url, tls=self.tlsConfig)
+        # self.client = docker.DockerClient(base_url=url, tls=self.tlsConfig)
 
     def listServices(self):
         return self.client.services.list()
 
     def getServicesList(self):
         services =  yaml.load(self.stream)['services']
-        kwargs = {}
+
         for service in services:
+            kwargs = {}
             self.name = service
             options = services[service]
             for option in options.keys():
@@ -68,86 +47,156 @@ class Services:
                         else:
                             "Enter a correct parameter for service %s"%service
                     else:
-                        build_args['path'] = options['build']
-                        build_args['dockerfile'] = "Dockerfile"
+                        build_args['path'] = deepcopy(options['build'])
+                        build_args['dockerfile'] = deepcopy("Dockerfile")
                 elif option == "image":
-                    kwargs['image'] =  options['image']
+                    kwargs['image'] =  deepcopy(options['image'])
                 elif option == "command":
-                    kwargs['command'] = options['command']
-                elif option == "args":
-                    pass
-                elif option == "constraints":
-                    pass
-                elif option == "container_label":
-                    pass
-                elif option == "endpoint_specs":
-                    pass
-                elif option == "env":
-                    pass
-                elif option == "hostname":
-                    pass
+                    kwargs['command'] = deepcopy(options['command'])
+                # elif option == "args":
+                #     pass
+                # elif option == "constraints":
+                #     pass
                 elif option == "labels":
-                    pass
-                elif option == "log_driver":
-                    pass
-                elif option == "log_driver_options":
-                    pass
-                elif option == "container_name":
-                    pass
-                elif option == "credential_spec":
-                    pass
+                    if type(options['labels']) == dict:
+                        kwargs['container_labels'] = deepcopy(options['labels'])
+                    else:
+                        pass
+
+                # elif option == "env":
+                #     pass
+                # elif option == "hostname":
+                #     pass
+                # elif option == "labels":
+                #     pass
+                # elif option == "log_driver":
+                #     pass
+                # elif option == "log_driver_options":
+                #     pass
+                # elif option == "container_name":
+                #     pass
+                # elif option == "credential_spec":
+                #     pass
                 elif option == "deploy":
-                    if "mode" in option['deploy']:
-                        pass
-                    if "replicas" in option['deploy']:
-                        pass
-                    if "placement" in option['deploy']:
-                        pass
-                    if "update_config" in option['deploy']:
-                        pass
-                    if "resources" in option['deploy']:
-                        pass
-                    if "restart_policy" in option['deploy']:
-                        pass
-                    if "labels" in option['deploy']:
-                        pass
+                    serviceMode = {'mode':'replicated','replicas':1}
+                    if "mode" in options['deploy']:
+                        serviceMode['mode'] = options['deploy']['mode']
+                    if "replicas" in options['deploy']:
+                        serviceMode['mode'] = options['deploy']['replicas']
+                    kwargs['mode'] = docker.types.ServiceMode(mode=serviceMode['mode'],replicas=serviceMode['replicas'])
+                    if "placement" in options['deploy']:
+                        kwargs['constraints'] = options['deploy']['placement']['constraints']
+                    if "update_config" in options['deploy']:
+                        configurationDict = self.getUpdateConfig(options['deploy']['update_config'])
+                        kwargs['update_config'] = docker.types.UpdateConfig(parallelism = configurationDict['parallelism'], delay = configurationDict['delay'], failure_action = 'continue', monitor = configurationDict['monitor'], max_failure_ratio = configurationDict['max_failure_ratio'])
+                    if "resources" in options['deploy']:
+                        resourceDict = self.getResources(options['deploy']['resources'])
+                        kwargs['resources'] = docker.types.Resources(cpu_limit=resourceDict['cpu_limit'], mem_limit=resourceDict['mem_limit'], cpu_reservation=resourceDict['cpu_reservation'], mem_reservation=resourceDict['mem_reservation'])
+                    if "restart_policy" in options['deploy']:
+                        policyDict = self.getRestartPolicy(options['deploy']['restart_policy'])
+                        kwargs['restart_policy'] = docker.types.RestartPolicy(condition=policyDict['condition'], delay=policyDict['delay'], max_attempts=policyDict['max_attempts'], window=policyDict['window'])
+                    # if "labels" in options['deploy']:
+                    #     pass
                 elif option == "depends_on":
-                    pass
-                elif option == "entrypoint":
-                    pass
+                    depends_on = options['depends_on']
+                # elif option == "entrypoint":
+                #     pass
                 elif option == "env_file":
                     pass
                 elif option == "environment":
-                    pass
-                elif option == "expose":
-                    pass
-                elif option == "extra_hosts":
-                    pass
-                elif option == "healthcheck":
-                    pass
+                    if type(options['environment']) == dict:
+                        envList = []
+                        for x in options['environment']:
+                            if options['environment'][x] != None:
+                                envList.append('%s=%s' % (x, options['environment'][x]))
+                            else:
+                                envList.append(x)
+                        kwargs['env'] = envList
+                    else:
+                        kwargs['env'] = options['environment']
+
+                # elif option == "expose":
+                #     pass
+                # elif option == "extra_hosts":
+                #     pass
+                # elif option == "healthcheck":
+                #     pass
                 elif option == "logging":
-                    pass
+                    kwargs['log_driver']= options['logging']['driver']
+                    kwargs['log_driver_options'] = options['logging']['options']
                 elif option == "networks":
-                    pass
+                    kwargs['networks'] = options['networks']
                 elif option == "pid":
                     pass
                 elif option == "ports":
-                    pass
+                    ports = dict()
+                    for port in options['ports']:
+                        if '/' in port:
+                            protocol = port.rsplit('/')[1]
+                            port = port.rsplit('/')[0]
+                            ports[port.rsplit(':',1)[1]] = (port.rsplit(':',1)[0],protocol)
+                        elif ':' not in port:
+                            ports[port] = port
+                        else:
+                            ports[port.rsplit(':', 1)[1]] = port.rsplit(':', 1)[0]
+                    kwargs['endpoint_spec'] = docker.types.EndpointSpec(mode='vip', ports=ports)
                 elif option == "volumes":
-                    pass
+                    kwargs['mounts'] = options['volumes']
                 elif option == "secrets":
-                    pass
-                elif option == "ulimits":
-                    pass
-                elif option == "restart":
-                    pass
-                elif option == "driver":
-                    pass
-                elif option == "driver_opts":
-                    pass
+                    kwargs['secrets'] = options['secrets']
+                # elif option == "ulimits":
+                #     pass
+                elif option == "hostname":
+                    kwargs['hostname'] = options['hostname']
+                elif option == "user":
+                    kwargs['user'] = options['user']
+                elif option == "working_dir":
+                    kwargs['workdir'] = options['working_dir']
                 #elif option == ""
+            print kwargs
+
+    def getUpdateConfig(self,dict):
+        configDict = {'parallelism': None, 'delay': None, 'failure_action': None, 'monitor': None,
+                      'max_failure_ratio': None}
+        if 'parallelism' in dict:
+            configDict['parallelism'] = dict['parallelism']
+        if 'delay' in dict:
+            configDict['delay'] = dict['delay']
+        if 'failure_action' in dict:
+            configDict['failure_action'] = dict['failure_action']
+        if 'monitor' in dict:
+            configDict['monitor'] = dict['monitor']
+        if 'max_failure_ratio' in dict:
+            configDict['max_failure_ratio'] = dict['max_failure_ratio']
+        return configDict
+
+    def getResources(self,dict):
+        resourceDict = {'cpu_limit': None, 'mem_limit': None, 'cpu_reservation': None, 'mem_reservation': None}
+        if 'limits' in dict:
+            if 'cpus' in dict['limits']:
+                resourceDict['cpu_limit'] = dict['limits']['cpus']
+            if 'memory' in dict['limits']:
+                resourceDict['mem_limit'] = dict['limits']['cpus']
+        if 'reservations' in dict:
+            if 'cpus' in dict['reservations']:
+                resourceDict['cpu_reservation'] = dict['limits']['cpus']
+            if 'memory' in dict['reservations']:
+                resourceDict['mem_reservation'] = dict['limits']['memory']
+        return resourceDict
+
+    def getRestartPolicy(self,dict):
+        rPolicyDict = {'condition':'none', 'delay': 0, 'max_attempts': 0, 'window': 0}
+        if 'condition' in dict:
+            rPolicyDict['condition'] = dict['condition']
+        if 'delay' in dict:
+            rPolicyDict['delay'] = dict['delay']
+        if 'max_attempts' in dict:
+            rPolicyDict['max_attempts'] = dict['max_attempts']
+        if 'window' in dict:
+            rPolicyDict['window'] = dict['window']
+        return rPolicyDict
 
     def create_service(self):
         pass
-service = Services('master','tcp://192.168.99.100:2376')
+service = Services()#'master','tcp://192.168.99.100:2376')
 print service.getServicesList()

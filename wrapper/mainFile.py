@@ -78,11 +78,10 @@ elif arguments[1].lower() == "wrapup":
             rm.removeNodes(arguments[2:])
         os._exit(0)
     else:
-        print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details" \
-
+        print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details"
         os._exit(0)
-elif arguments[1] == "create":
 
+elif arguments[1] == "creata":
     if number_of_argument > 2:
         if arguments[2] == "help" or arguments[2] == "--help":
             print "\nUsage: wrapper create [OPTIONS] \n\n" \
@@ -103,12 +102,14 @@ elif arguments[1] == "create":
         setup = Server()
         setup.create_cluster()
         os._exit(0)
+
+
 elif arguments[1].lower() == "swarmit":
     swarm = Swarm_Handler()
     swarm.checkNswarm()
     os._exit(0)
 
-if arguments[1] == "creata":
+if arguments[1] == "create":
     ###### File Reading
     try:
         print "Starting the wrapper Application"
@@ -175,7 +176,6 @@ if arguments[1] == "creata":
         swarmMaster.create_network('icarus', 'overlay')
         dockerMachine.deploy_portainer(master)
         dockerMachine.deploy_registry(master)
-        print "There"
         masterDetails = dockerMachine.checkSwarm(master)
         managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
         workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
@@ -189,7 +189,6 @@ if arguments[1] == "creata":
             else:
                 swarm.joinSwarm(ip=MASTER[master]['ip'], token=workerToken, listen=MASTER[nodes]['ip'])
                 MASTER[nodes]['swarm'] = True
-        print "I am here"
         swarmMaster.buildImage()
         dockerMachine.copy_composeFile()
         dockerMachine.deploy_stack(master)

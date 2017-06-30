@@ -9,9 +9,58 @@ services:
       cache_from:
         - alpine:latest
         - corp/web_app:3.14
+    ports:
+      - "3000"
+      - "3000-3005"
+      - "8000:8000"
+      - "9090-9091:8080-8081"
+      - "49100:22"
+      - "127.0.0.1:8001:8001"
+      - "127.0.0.1:5000-5010:5000-5010"
+      - "6060:6060/udp"
+    networks:
+      - some-network
+      - other-network
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://192.168.0.42:123"
+    environment:
+       RACK_ENV: development
+       SHOW: 'true'
+       SESSION_SECRET:
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - engine.labels.operatingsystem == ubuntu 14.04
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.001'
+          memory: 50M
+        reservations:
+          cpus: '0.0001'
+          memory: 20M
+
     image: 127.0.0.1:5000/emq
     container_name: emq
     network_mode: "host"
+    labels:
+      - "com.example.description=Financial transaction network"
+      - "com.example.department=Finance"
+      - "com.example.label-with-empty-value"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+
 #    ports:
 #     - "8125:8125/udp"
 #    volumes:
