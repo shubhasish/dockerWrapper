@@ -6,8 +6,8 @@ from config import DM_URL
 from modules.machine import Machine
 import os
 
-cmdJson={"join-token_manager":"docker swarm join-token manager",
-         "join-token_worker":"docker swarm join-token worker"}
+cmdJson={"join-token_manager":"sudo docker swarm join-token manager",
+         "join-token_worker":"sudo docker swarm join-token worker"}
 
 class Swarm_Handler:
     def __init__(self):
@@ -118,9 +118,13 @@ class Swarm_Handler:
                 os._exit(1)
     def getJoinToken(self,master):
         masterDetails = self.checkSwarm(master)
-        managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
-        workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
-        return (managerToken,workerToken)
+        if masterDetails[0]:
+            managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
+            workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
+            return (managerToken,workerToken)
+        else:
+            print masterDetails[1]
+
     
     def checkSwarm(self,name):
         try:

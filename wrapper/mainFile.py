@@ -81,7 +81,7 @@ elif arguments[1].lower() == "wrapup":
         print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details"
         os._exit(0)
 
-elif arguments[1] == "creata":
+elif arguments[1] == "create":
     if number_of_argument > 2:
         if arguments[2] == "help" or arguments[2] == "--help":
             print "\nUsage: wrapper create [OPTIONS] \n\n" \
@@ -98,9 +98,7 @@ elif arguments[1] == "creata":
                 print "Not a valid file, provide a valid file path"
         os._exit(0)
     else:
-        print "\nNo path to file is provided. Reading configuartion from default 'config.json' file"
-        setup = Server()
-        setup.create_cluster()
+        print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
         os._exit(0)
 
 

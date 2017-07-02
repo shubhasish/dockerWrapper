@@ -155,6 +155,37 @@ class Services:
                 #elif option == ""
             print kwargs
 
+
+    def deploy(self,dict):
+        serviceMode = {'mode': 'replicated', 'replicas': 1}
+        if "mode" in dict['deploy']:
+            serviceMode['mode'] = dict['deploy']['mode']
+        if "replicas" in dict['deploy']:
+            serviceMode['mode'] = dict['deploy']['replicas']
+        kwargs['mode'] = docker.types.ServiceMode(mode=serviceMode['mode'], replicas=serviceMode['replicas'])
+        if "placement" in dict['deploy']:
+            kwargs['constraints'] = dict['deploy']['placement']['constraints']
+        if "update_config" in dict['deploy']:
+            configurationDict = self.getUpdateConfig(dict['deploy']['update_config'])
+            kwargs['update_config'] = docker.types.UpdateConfig(parallelism=configurationDict['parallelism'],
+                                                                delay=configurationDict['delay'],
+                                                                failure_action='continue',
+                                                                monitor=configurationDict['monitor'],
+                                                                max_failure_ratio=configurationDict[
+                                                                    'max_failure_ratio'])
+        if "resources" in dict['deploy']:
+            resourceDict = self.getResources(dict['deploy']['resources'])
+            dict['resources'] = docker.types.Resources(cpu_limit=resourceDict['cpu_limit'],
+                                                         mem_limit=resourceDict['mem_limit'],
+                                                         cpu_reservation=resourceDict['cpu_reservation'],
+                                                         mem_reservation=resourceDict['mem_reservation'])
+        if "restart_policy" in dict['deploy']:
+            policyDict = self.getRestartPolicy(dict['deploy']['restart_policy'])
+            kwargs['restart_policy'] = docker.types.RestartPolicy(condition=policyDict['condition'],
+                                                                  delay=policyDict['delay'],
+                                                                  max_attempts=policyDict['max_attempts'],
+                                                                  window=policyDict['window'])
+
     def getUpdateConfig(self,dict):
         configDict = {'parallelism': None, 'delay': None, 'failure_action': None, 'monitor': None,
                       'max_failure_ratio': None}

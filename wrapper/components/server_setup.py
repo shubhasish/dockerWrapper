@@ -48,7 +48,7 @@ class Server:
         else:
             print "Following nodes are present in the cluster"
             for node in self.existing_nodes:
-                print "%s \t %s" % (node, self.existing_nodes[node]['role'])
+                print "%s \t %s" % (node, self.MASTER[node]['role'])
             requirements = self.required_nodes.difference(self.existing_nodes)
             if len(requirements) > 0:
                 print "Following nodes will be created"
@@ -66,7 +66,8 @@ class Server:
         master = []
         for node in createList:
             print "\nCreating %s...." % node
-            self.manager.create(name=node, driver=self.config_file[node]['driver'])
+            print self.config_file[node]['driver']
+            self.manager.create(name=node, **self.config_file[node])
             #docker.createMachine(name=node, driver=self.config_file[node]['driver'])
             config = CONFIG_FORMATT
             config['url'] = docker.getURL(node)

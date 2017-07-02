@@ -1,10 +1,10 @@
 from machine import Machine
 import os
 from config import dir_path
-cmdJson={"join-token_manager":"docker swarm join-token manager",
-         "join-token_worker":"docker swarm join-token worker",
-         "join":"docker swarm join --token %s %s",
-         "init": "docker swarm init --advertise-addr %s",
+cmdJson={"join-token_manager":"sudo docker swarm join-token manager",
+         "join-token_worker":"sudo docker swarm join-token worker",
+         "join":"sudo docker swarm join --token %s %s",
+         "init": "sudo docker swarm init --advertise-addr %s",
          "nodes_list":"docker node ls",
          "portainer":"docker service create \
 --name portainer \

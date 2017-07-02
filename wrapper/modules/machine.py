@@ -89,7 +89,7 @@ class Machine:
         match = self._match(cmd, regexp)
         return match.group(1)
 
-    def create(self, name, driver='virtualbox', logging=True):
+    def create(self, name,logging=True, **kwargs):
         """
         Create a docker machine using the provided name and driver
         NOTE: This takes a loooooong time
@@ -102,7 +102,21 @@ class Machine:
         Returns:
             int: error code from the run
         """
-        cmd = ['create', '--driver', driver, name]
+
+        driver = kwargs.pop('driver')
+        kwargs.pop('role')
+        # kwargs.pop('role')
+        cmd= []
+        option= []
+        if len(kwargs.keys()) > 0:
+            for options in kwargs.keys():
+
+                option.extend(["--%s-%s"%(driver,options),kwargs[options]])
+
+            if option:
+                cmd = ['create', '--driver', driver]+option+[name]
+        else:
+            cmd = ['create', '--driver', driver, name]
         if logging:
             stdout, stderr, errorcode = self._run_logging(cmd)
         else:
