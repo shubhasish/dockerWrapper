@@ -1,5 +1,7 @@
 from os.path import expanduser
 import os
+from modules.tls import TLS
+import docker
 
 DEFAULT_HOME_PATH = expanduser('~') + '/.docker/machine/machines/%s/'
 CA_PATH = DEFAULT_HOME_PATH + 'ca.pem'
@@ -13,3 +15,10 @@ CONFIG_FORMATT = {"url":"",
                   "driver":"",
                   "init": False,
                   "swarm": False}
+
+
+def getClient(name, url):
+    tls = TLS()
+    tlsConfig = tls.getTLSconfig(name)
+
+    return docker.DockerClient(base_url=url, tls=tlsConfig)

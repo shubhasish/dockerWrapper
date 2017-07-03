@@ -123,9 +123,18 @@ elif arguments[1] == "creata":
 
 
 elif arguments[1].lower() == "swarmit":
-    swarm = Swarm_Handler()
-    swarm.checkNswarm()
-    os._exit(0)
+    if number_of_argument > 2:
+        if arguments[2] == "help" or arguments[2] == "--help":
+            print "\nUsage: wrapper swarmit [OPTIONS] \n\n" \
+                  "Command to create cluster\n\n" \
+                  "Option:\n" \
+                  "help: show usage details\n"
+
+    else:
+        # print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
+        swarm = Swarm_Handler()
+        swarm.checkNswarm()
+        os._exit(0)
 
 if arguments[1] == "create":
     ###### File Reading
