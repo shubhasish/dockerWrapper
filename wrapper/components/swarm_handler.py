@@ -27,9 +27,10 @@ class Swarm_Handler:
         #     print "Exiting Cluster Creation Process"
         #     os._exit(1)
         try:
-            print "Reading state file for "
+            print "Reading state file for swarm Check "
             self.STATE = self.file.readFile('shape.memory')
         except Exception as e:
+
             pass
 
     def checkNswarm(self):
@@ -48,7 +49,7 @@ class Swarm_Handler:
                     self.swarmList.add(node)
                 else:
                     self.slaveSet.add(node)
-
+        # print self.swarmList
         if len(self.swarmList) > 0:
             print "Swarm has already been initialized with %s"%self.mainMaster
             print "Following Nodes are in swarm:"
@@ -66,7 +67,7 @@ class Swarm_Handler:
                 joinTokens = self.getJoinToken(self.mainMaster)
                 print "Joining swarm....."
                 masterThread = Thread(target=self.swarm_join, args=(self.masterSet, joinTokens[0], self.mainMaster,))
-                slaveThread = Thread(target=self.swarm_join, args=(self.slaveSet, joinTokens[0], self.mainMaster,))
+                slaveThread = Thread(target=self.swarm_join, args=(self.slaveSet, joinTokens[1], self.mainMaster,))
                 masterThread.start()
                 slaveThread.start()
                 masterThread.join()
@@ -88,7 +89,7 @@ class Swarm_Handler:
             joinTokens = self.swarm_init(self.mainMaster)
             print "Joining Swarm....."
             masterThread = Thread(target=self.swarm_join,args=(self.masterSet,joinTokens[0],self.mainMaster,))
-            slaveThread = Thread(target=self.swarm_join,args=(self.slaveSet,joinTokens[0],self.mainMaster,))
+            slaveThread = Thread(target=self.swarm_join,args=(self.slaveSet,joinTokens[1],self.mainMaster,))
             masterThread.start()
             slaveThread.start()
             masterThread.join()
@@ -116,8 +117,10 @@ class Swarm_Handler:
             except Exception as e:
                 print e
                 os._exit(1)
+
     def getJoinToken(self,master):
         masterDetails = self.checkSwarm(master)
+        print masterDetails
         if masterDetails[0]:
             managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
             workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]

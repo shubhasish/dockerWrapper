@@ -107,7 +107,7 @@ elif arguments[1].lower() == "swarmit":
     swarm.checkNswarm()
     os._exit(0)
 
-if arguments[1] == "create":
+if arguments[1] == "creata":
     ###### File Reading
     try:
         print "Starting the wrapper Application"

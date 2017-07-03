@@ -57,8 +57,8 @@ class Server:
                 masterList = self.createNodes(requirements)
             else:
                 print "No new machines to be created"
-        swarm = Swarm_Handler()
-        swarm.checkNswarm()
+        # swarm = Swarm_Handler()
+        # swarm.checkNswarm()
         return masterList
 
     def createNodes(self,createList):
