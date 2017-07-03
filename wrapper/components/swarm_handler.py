@@ -27,7 +27,7 @@ class Swarm_Handler:
         #     print "Exiting Cluster Creation Process"
         #     os._exit(1)
         try:
-            print "Reading state file for swarm Check "
+            print "Reading state file for swarmCheck "
             self.STATE = self.file.readFile('shape.memory')
         except Exception as e:
 
@@ -111,8 +111,13 @@ class Swarm_Handler:
         for node in nodeList:
             swarm = Swarm(name=node, url=self.STATE[node]['url'])
             try:
+                ip = self.STATE[mainMaster]['ip'] + ':2377'
+
+                listen = None
+                if self.STATE[node]['role'] == "slave":
+                    listen = self.STATE[node]['ip'] + ':2378'
                 print "Joining %s \t %s"%(node,self.STATE[node]['ip'])
-                swarm.joinSwarm(ip=self.STATE[mainMaster]['ip'],token=token,listen=self.STATE[node]['ip'])
+                swarm.joinSwarm(ip=ip,token=token,listen=listen)
                 self.STATE[node]['swarm'] = deepcopy(True)
             except Exception as e:
                 print e

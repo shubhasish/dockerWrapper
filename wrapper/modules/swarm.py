@@ -19,9 +19,7 @@ class Swarm:
             print e
             return False
 
-    def joinSwarm(self,ip,token,listen=None):
-        ip = ip + ':2377'
-        listen = listen + ":2378"
+    def joinSwarm(self,ip,token,listen):
         try:
             output = self.client.swarm.join(remote_addrs=[ip],join_token=token,listen_addr=listen)
             return True

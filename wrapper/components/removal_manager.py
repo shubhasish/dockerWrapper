@@ -20,12 +20,12 @@ class RemovalManager:
             print "All nodes will  be deleted, and the workspace will be reseted."
             for nodes in self.MASTER.keys():
                 print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
-                self.manager.rm(nodes)
+                self.manager.rm(nodes,force=True)
             os.remove(dir_path+"/shape.memory")
         else:
             print "Following nodes will be deleted"
             for nodes in name:
                 print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
-                self.manager.rm(nodes)
+                self.manager.rm(nodes,force=True)
                 del self.MASTER[nodes]
             self.file.writeFile('shape.memory')
