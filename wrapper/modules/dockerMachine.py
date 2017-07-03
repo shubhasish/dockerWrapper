@@ -22,9 +22,10 @@ class dockerMachine:
         self.clientUrl = "/usr/local/bin/docker-machine"
         self.client = Machine(path=self.clientUrl)
 
-    def createMachine(self,name,driver="virtualbox"):
+    def createMachine(self,name,configurations,driver="virtualbox"):
         try:
-            self.client.create(name=name,driver=driver)
+            print "Hello"
+            self.client.create(name=name,**configurations)
             return True
         except Exception as e:
             print e

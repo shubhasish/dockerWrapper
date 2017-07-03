@@ -1,23 +1,14 @@
 {
   "master": {
     "role": "manager",
-    "driver": "amazonec2",
-    "region": "ca-central-1",
-    "ami": "ami-b3d965d7",
-    "security-group":"docker-machine-manual"
+    "driver": "virtualbox"
   },
   "worker": {
-    "driver": "amazonec2",
-    "role": "slave",
-    "region": "ca-central-1",
-    "ami": "ami-b3d965d7",
-    "security-group":"docker-machine-manual"
+    "driver": "virtualbox",
+    "role": "slave"
   },
   "node1": {
-    "driver": "amazonec2",
-    "role": "slave",
-    "region": "ca-central-1",
-    "ami": "ami-b3d965d7",
-    "security-group":"docker-machine-manual"
+    "driver": "virtualbox",
+    "role": "slave"
   }
 }

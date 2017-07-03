@@ -54,9 +54,9 @@ class Swarm:
             self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/ignite',
                                      dockerfile='ignite_dockerfile')
             self.client.images.push('127.0.0.1:5000/ignite')
-            self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/emq',
-                                 dockerfile='Dockerfile')
-            self.client.images.push('127.0.0.1:5000/emq')
+            # self.client.images.build(path=dir_path + '/composer', tag='127.0.0.1:5000/emq',
+            #                      dockerfile='Dockerfile')
+            # self.client.images.push('127.0.0.1:5000/emq')
         except Exception as e:
             print e
 #     def deploy_portnair(self):
