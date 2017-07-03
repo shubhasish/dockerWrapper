@@ -28,4 +28,4 @@ class RemovalManager:
                 print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
                 self.manager.rm(nodes,force=True)
                 del self.MASTER[nodes]
-            self.file.writeFile('shape.memory')
+            self.file.writeFile(self.MASTER)
