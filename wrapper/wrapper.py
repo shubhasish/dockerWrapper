@@ -60,7 +60,15 @@ if arguments[1] == "deploy":
                   "-p --path-: path to the docker-compose '.yml or .yaml' file"
         elif arguments[2] == "-p" or arguments[2] == "--path":
             if os.path.isfile(arguments[3]) and (".yaml" in arguments[3] or ".yml" in arguments[3]):
-                deploy = Deployment(path=arguments[3])
+                try:
+                    arguments[4]
+                    deploy = Deployment(path=arguments[3],option=arguments[4])
+                    deploy.deployService()
+                except Exception as e:
+                    print "No options provided, so deploying all services."
+                    deploy = Deployment(path=arguments[3], option='all')
+                    deploy.deployService()
+
             else:
                 print "Not a valid file, provide a valid file path"
         os._exit(0)
@@ -140,7 +148,7 @@ if arguments[1] == "create":
     ###### File Reading
     try:
         print "Starting the wrapper Application"
-        configuration = file.readFile('config.json')
+        configuration = file.readFile(arguments[3])
         requiredMachines = set(configuration.keys())
     except Exception as e:
         print e

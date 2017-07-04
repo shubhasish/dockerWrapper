@@ -125,7 +125,6 @@ class Swarm_Handler:
 
     def getJoinToken(self,master):
         masterDetails = self.checkSwarm(master)
-        print masterDetails
         if masterDetails[0]:
             managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
             workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
