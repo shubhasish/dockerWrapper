@@ -2,7 +2,7 @@
 This a docker orchestartion, deployment and container management tool. It can be used to automate the provisioning, swarm creation and orchestration, deployment management and monitoring.
 This Application uses 'docker-machine', docker SDK and docker API to automate your all tasks.
 
-##Pre-Requisite
+## Pre-Requisite
 You need to have docker, docker-machine installed on your machine to make this application get going.
 
 ## Usage
@@ -13,7 +13,7 @@ This application will be used for:
 4. Monitoring
 5. Auto-Scaling
 
-##Components
+## Components
 
 ### Poperty file
 
