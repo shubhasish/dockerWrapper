@@ -34,8 +34,9 @@ Other properties depends on the type of driver, which can be found on **docker-m
 Mention the options in a key:value fashion, removing the driver prefix from the option.
 For example,
 
---virtualbox-memory will be "memory":<value> in JSON file
---virtualbox-cpu-count will be "cpu-count":<value> in JSON file
+**--virtualbox-memory** will be **"memory":<value>** in JSON file
+
+**--virtualbox-cpu-count** will be **"cpu-count":<value>** in JSON file
 
 Example of a JSON file:
 
