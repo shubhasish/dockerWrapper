@@ -64,7 +64,7 @@ The deployment descriptions/options are same as that of docker-compose file vers
 
 ## Functions
 
-1) Provisioning:
+### Provisioning:
 
 Provisioning can be done by running:
 
@@ -72,7 +72,7 @@ Provisioning can be done by running:
 
 For more info, type **wrapper create --help**
 
-2) Swarm Creation
+### Swarm Creation
 
 Swarm creation is done by running
 
@@ -80,7 +80,7 @@ Swarm creation is done by running
 
 For more info, type **wrapper swarmit --help**
 
-3) Deploy
+### Deploy
 
 Deployment is done by the following command
 
@@ -88,7 +88,7 @@ Deployment is done by the following command
 
 For more info, type **wrapper deploy --help**
 
-4) Re-Deploy
+### Re-Deploy
 
 Re-Deployment of a single service or the whole stack can be done by following command:
 
@@ -96,7 +96,7 @@ Re-Deployment of a single service or the whole stack can be done by following co
 
 For more info, type **wrapper deploy --help**
 
-5) Clean-Up
+### Clean-Up
 
 Deleting a single server/node or the whole cluster can be done by following command
 
