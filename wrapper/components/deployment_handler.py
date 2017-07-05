@@ -6,14 +6,15 @@ from config import dir_path
 from config import getClient
 from modules.fileFormatter import File
 import os
+import  time
 
 class Deployment:
-    def __init__(self,path,option):
+    def __init__(self,path):
         self.ymlPath = path
         self.file = File()
         # self.STATE = None
         self.stream = open(path,'r+')
-        self.serviceName = option
+
         try:
             print "Reading state file for deployment\n "
             self.STATE = self.file.readFile('shape.memory')
@@ -28,7 +29,8 @@ class Deployment:
         self.serviceList = { x.name: x.id for x in self.listServices()}
 
 
-    def deployService(self):
+    def deployService(self,option):
+        self.serviceName = option
         if "registry" in self.serviceList:
             print "\nRegistry already deployed, so skipping it"
         else:
@@ -51,7 +53,9 @@ class Deployment:
                 print e
                 print "\nPortainer not Deployed. UI may not be available."
 
-        servicesDict = self.getServicesList()
+        ### Create an Overlay Network
+        self.network = self.createNetwork()
+        servicesDict = self.getServicesList(option=self.serviceName)
         for service in servicesDict.keys():
             if "build" in servicesDict[service]:
                 servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
@@ -59,7 +63,48 @@ class Deployment:
                 image = self.imageBuilder(**servicesDict[service]['build'])
                 self.pushImageToRegistry(servicesDict[service]['build']['tag'])
 
+                servicesDict[service]['image'] = servicesDict[service]['build']['tag']
+                del servicesDict[service]['build']
 
+                self.createService(servicesDict[service])
+            else:
+                self.createService(servicesDict[service])
+
+    def reDeploy(self,serviceName):
+        servicesDict = self.getServicesList(option=serviceName)
+
+        for service in servicesDict.keys():
+            print "Removing Service %s" % service
+            self.serviceRemover(service)
+            if "build" in servicesDict[service]:
+                servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
+
+                print "Removing any previous images"
+
+                time.sleep(10)
+                self.imageCleaner(servicesDict[service]['build']['tag'])
+
+
+                servicesDict[service]['build']['stream'] = True
+
+
+
+                print "Building Image"
+                image = self.imageBuilder(**servicesDict[service]['build'])
+                print "Pushing Image to Local Registry"
+                self.pushImageToRegistry(servicesDict[service]['build']['tag'])
+
+                servicesDict[service]['image'] = servicesDict[service]['build']['tag']
+                del servicesDict[service]['build']
+
+                print "Creating Service"
+                self.createService(servicesDict[service])
+            else:
+                print "Creating Service"
+                self.createService(servicesDict[service])
+
+
+#----------------------------------------------------------------------------
     def deployUI(self):
         kwargs = {"name":"portainer","args":["-H","unix:///var/run/docker.sock"],"constraints":["node.role == manager"],"endpoint_spec":docker.types.EndpointSpec(mode='vip',ports={9000:9000}),"mounts":["//var/run/docker.sock://var/run/docker.sock"]}
         try:
@@ -78,11 +123,29 @@ class Deployment:
     def listServices(self):
         return self.masterMachine.services.list()
 
-    def serviceDeployer(self,**kwargs):
-        pass
+    def serviceFinder(self,serviceName):
+        serviceList = self.listServices()
+        return [x for x in serviceList if x.name == serviceName][0]
 
-    def serviceRemover(self,**kwargs):
-        pass
+    def serviceRemover(self,serviceName):
+        service = self.serviceFinder(serviceName)
+        service.remove()
+
+    def createService(self,dict):
+        if 'network' in dict:
+            dict['networks'].append('icarus')
+        else:
+            dict['networks'] = ['icarus']
+        image = dict.pop('image')
+        command = None
+        if "command" in dict:
+            command = dict.pop('command')
+        serviceId = self.masterMachine.services.create(image=image,command=command,**dict)
+        print "\nService Deployed Successfully with service id: %s" % serviceId.id
+
+    def createNetwork(self):
+        network = self.masterMachine.networks.create('icarus',driver="overlay")
+        return network
 
 #------------------------------------------------------------------
 
@@ -92,18 +155,25 @@ class Deployment:
 
     def pushImageToRegistry(self,image):
         self.masterMachine.images.push(image,**{'stream':True})
+
+    def imageCleaner(self,image):
+        self.masterMachine.images.remove(image=image)
 #-----------------------------------------------------------------
 
 
 
-    def getServicesList(self):
+    def getServicesList(self,option):
         services =  yaml.load(self.stream)['services']
         serviceDict = {}
-        if self.serviceName == 'all':
+        if option == 'all':
             for service in services:
-                serviceDict[service] = deepcopy(self.getOptions(services[service]))
+                deployOptions = self.getOptions(services[service])
+                deployOptions['name'] = service
+                serviceDict[service] = deepcopy(deployOptions)
         else:
-           serviceDict[self.serviceName] = deepcopy(self.getOptions(services[self.serviceName]))
+            deployOptions = self.getOptions(services[option])
+            deployOptions['name'] = option
+            serviceDict[option] = deepcopy(deployOptions)
         return serviceDict
 
 
@@ -189,11 +259,12 @@ class Deployment:
                     if '/' in port:
                         protocol = port.rsplit('/')[1]
                         port = port.rsplit('/')[0]
-                        ports[port.rsplit(':', 1)[1]] = (port.rsplit(':', 1)[0], protocol)
+                        ports[int(port.rsplit(':', 1)[1])] = (int(port.rsplit(':', 1)[0]), protocol)
                     elif ':' not in port:
                         ports[port] = port
                     else:
-                        ports[port.rsplit(':', 1)[1]] = port.rsplit(':', 1)[0]
+                        ports[int(port.rsplit(':', 1)[1])] = int(port.rsplit(':', 1)[0])
+
                 kwargs['endpoint_spec'] = docker.types.EndpointSpec(mode='vip', ports=ports)
             elif option == "volumes":
                 kwargs['mounts'] = options['volumes']
@@ -206,6 +277,7 @@ class Deployment:
                 kwargs['user'] = options['user']
             elif option == "working_dir":
                 kwargs['workdir'] = options['working_dir']
+
         return kwargs
 
 
