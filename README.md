@@ -55,5 +55,11 @@ Example of a JSON file:
 }
 ```
 
-### Composer Folder
-Place your deployment scripts **docker-compose.yaml** in your composer folder. The application will deploy it for you.
+### Deployment Script
+
+It's a YAML or YML file, where we will be metioning all our deployment requirements and wrapper will take care of it. We are using **Docker-Compose** file version:3 for deployment description.
+The deployment descriptions/options are same as that of docker-compose file version:3. Refer for more details:
+                        ```https://docs.docker.com/compose/compose-file/```
+
+
+## Functions

@@ -76,19 +76,6 @@ if arguments[1] == "deploy":
         print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
         os._exit(0)
 
-    # try:
-    #     MASTER = file.readFile('shape.memory')
-    #     existingCluster = set(MASTER.keys())
-    # except Exception as e:
-    #     print e
-    #     print "Cluster hasn't been initialized in this folder yet. Please initialize Cluster"
-    #     os._exit(0)
-    # master = [x for x in existingCluster if MASTER[x]['init']==True][0]
-    # swarmMaster = Swarm(name=master, url=MASTER[master]['url'])
-    # swarmMaster.deploy()
-    # dockerMachine.copy_composeFile()
-    # dockerMachine.remove_stack(master)
-    # dockerMachine.deploy_stack(master)
     os._exit(0)
 
 elif arguments[1].lower() == "wrapup":
@@ -139,101 +126,10 @@ elif arguments[1].lower() == "swarmit":
                   "help: show usage details\n"
 
     else:
-        # print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
         swarm = Swarm_Handler()
         swarm.checkNswarm()
         os._exit(0)
 
-# if arguments[1] == "create":
-#     ###### File Reading
-#     try:
-#         print "Starting the wrapper Application"
-#         configuration = file.readFile(arguments[3])
-#         requiredMachines = set(configuration.keys())
-#     except Exception as e:
-#         print e
-#         os._exit(1)
-#     try:
-#         MASTER = file.readFile('shape.memory')
-#         existingCluster = set(MASTER.keys())
-#     except Exception as e:
-#         print e
-#
-#     ######
-#
-#     if len(existingCluster) == 0:
-#         print "No nodes are present in this cluster"
-#         createList = requiredMachines
-#         createMachines(createList,configuration)
-#         swarmList = createList
-#     else:
-#         print "Following nodes are present in the cluster"
-#         for node in existingCluster:
-#             print "%s \t %s" % (node, configuration[node]['role'])
-#         createList = requiredMachines.difference(existingCluster)
-#         createMachines(createList,configuration)
-#         swarmList = set([x for x in existingCluster if MASTER[x]['swarm'] == False])
-#         masterNode = [x for x in existingCluster if MASTER[x]['init'] == True]
-#         ##### Swarm Initialization
-#
-#         if len(masterNode) > 0:
-#             print "Swarm has been initialized"
-#
-#             print "Obtaining join token for %s" % masterNode[0]
-#             output = dockerMachine.checkSwarm(masterNode[0])
-#             managerToken = [x for x in output[1] if 'SWMTKN' in x][0]
-#             workerToken = [x for x in output[2] if 'SWMTKN' in x][0]
-#             swarmIp = MASTER[masterNode[0]]['ip']
-#             swarm_init = True
-#         else:
-#             print "Swarm hasn't been initialized"
-#             swarm_init = False
-#
-#     ###### SWARM addition
-#     swarmList = createList.union(swarmList)
-#     if swarm_init:
-#         print "Swarm already initialized"
-#         print "Adding new nodes to swarm cluster"
-#         for nodes in swarmList:
-#             swarm = Swarm(nodes, MASTER[nodes]['url'])
-#             if configuration[nodes]['role'].lower() == "manager":
-#
-#                 swarm.joinSwarm(ip=swarmIp, token=managerToken, listen=MASTER[nodes]['ip'])
-#             else:
-#                 swarm.joinSwarm(ip=swarmIp, token=workerToken, listen=MASTER[nodes]['ip'])
-#     else:
-#         print "Initializing Swarm..."
-#         master = [x for x in swarmList if MASTER[x]['role'].lower() == "manager"][0]
-#         swarmMaster = Swarm(name=master, url=MASTER[master]['url'])
-#         swarmMaster.swarmInit(MASTER[master]['ip'])
-#         MASTER[master]['swarm'] = True
-#         MASTER[master]['init'] = True
-#         swarmMaster.create_network('icarus', 'overlay')
-#         dockerMachine.deploy_portainer(master)
-#         dockerMachine.deploy_registry(master)
-#         masterDetails = dockerMachine.checkSwarm(master)
-#         managerToken = [x for x in masterDetails[1] if 'SWMTKN' in x][0]
-#         workerToken = [x for x in masterDetails[2] if 'SWMTKN' in x][0]
-#         swarmList.remove(master)
-#         for nodes in swarmList:
-#             swarm = Swarm(nodes, MASTER[nodes]['url'])
-#             if configuration[nodes]['role'].lower() == "manager":
-#
-#                 swarm.joinSwarm(ip=MASTER[master]['ip'], token=managerToken, listen=MASTER[nodes]['ip'])
-#                 MASTER[nodes]['swarm'] = True
-#             else:
-#                 swarm.joinSwarm(ip=MASTER[master]['ip'], token=workerToken, listen=MASTER[nodes]['ip'])
-#                 MASTER[nodes]['swarm'] = True
-#     # master = "master"
-#     # url = "tcp://192.168.99.101:2376"
-#     # swarmMaster = Swarm(name=master, url=url)
-#
-#         swarmMaster.buildImage()
-#         dockerMachine.copy_composeFile()
-#
-#         dockerMachine.deploy_stack(master)
-#         if len(MASTER.keys()) > 0:
-#             file.writeFile(MASTER)
 
 if arguments[1] == "redeploy":
     if number_of_argument > 2:
@@ -250,10 +146,6 @@ if arguments[1] == "redeploy":
                     deploy.reDeploy(serviceName=arguments[4])
                 except Exception as e:
                     print e
-                    #print "No options provided, so deploying all services."
-
-                    # deploy = Deployment(path=arguments[3])
-                    # deploy.reDeploy(serviceName='all')
 
             else:
                 print "Not a valid file, provide a valid file path"
@@ -262,17 +154,3 @@ if arguments[1] == "redeploy":
         print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
         os._exit(0)
 
-    # try:
-    #     MASTER = file.readFile('shape.memory')
-    #     existingCluster = set(MASTER.keys())
-    # except Exception as e:
-    #     print e
-    #     print "Cluster hasn't been initialized in this folder yet. Please initialize Cluster"
-    #     os._exit(0)
-    # master = [x for x in existingCluster if MASTER[x]['init']==True][0]
-    # swarmMaster = Swarm(name=master, url=MASTER[master]['url'])
-    # swarmMaster.deploy()
-    # dockerMachine.copy_composeFile()
-    # dockerMachine.remove_stack(master)
-    # dockerMachine.deploy_stack(master)
-    # os._exit(0)
