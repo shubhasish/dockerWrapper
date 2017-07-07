@@ -21,7 +21,6 @@ class Deployment:
         except Exception as e:
             print e
             os._exit(1)
-            pass
 
         self.master = [x for x in self.STATE.keys() if self.STATE[x]['init']][0]
         print "\nMaster Node of this cluster: %s"%self.master
