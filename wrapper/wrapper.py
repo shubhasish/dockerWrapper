@@ -5,6 +5,16 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from config import CONFIG_FORMATT
+
+from content import MAIN_HELP
+from content import DEPLOY_HELP
+from content import WRAPUP_HELP
+from content import CREATE_HELP
+from content import SWARMIT_HELP
+from content import REDEPLOY_HELP
+from content import PATH_ERROR
+
+
 from modules.dockerMachine import dockerMachine
 from modules.fileFormatter import File
 from modules.swarm import Swarm
@@ -17,128 +27,101 @@ import sys
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-
-MASTER = {}
-requiredMachines = createList = existingCluster = memory = configuration = swarm_init = managerToken = workerToken = masterNode = swarmIp = ''
-file = File()
-dockerMachine = dockerMachine()
+helpSet = set(['--h','--help','help','-h'])
 
 
-def createMachines(createList,configuration):
-    print configuration
-    if len(createList) > 0:
-        print "Following nodes will be created"
-        master = []
-        print
-        for node in createList:
-            print configuration[node]
-            print "%s \t %s" % (node, configuration[node]['role'])
-        for node in createList:
-            print "Creating the node %s" % node
-            dockerMachine.createMachine(name=node, driver=configuration[node]['driver'],configurations=configuration[node])
-            config = CONFIG_FORMATT
-            config['url'] = dockerMachine.getURL(node)
-            config['ip'] = dockerMachine.getIp(node)
-            config['role'] = configuration[node]['role']
-            config['driver'] = configuration[node]['driver']
-            MASTER[node] =copy.deepcopy(config)
-
-
+def fileChecker(path,extention):
+    if os.path.isfile(path):
+        if any(x in path for x in extention):
+            return True
+        else:
+            return False
     else:
-        print "No new machines to be created"
+        return False
+##### Handler Classes
 
+
+
+
+##### Command Line Handler
 number_of_argument = len(sys.argv)
 arguments = sys.argv
 
 if arguments[1] == "deploy":
-    if number_of_argument > 2:
-        if arguments[2] == "help" or arguments[2] == "--help":
-            print "\nUsage: wrapper deploy [OPTIONS] <service-name>/all \n\n" \
-                  "Command to deploy a single service or multiple services\n\n" \
-                  "Option:\n" \
-                  "help-: show usage details\n" \
-                  "-p --path-: path to the docker-compose '.yml or .yaml' file"
-        elif arguments[2] == "-p" or arguments[2] == "--path":
-            if os.path.isfile(arguments[3]) and (".yaml" in arguments[3] or ".yml" in arguments[3]):
-                try:
-                    arguments[4]
-                    deploy = Deployment(path=arguments[3])
-                    deploy.deployService(option=arguments[4])
-                except Exception as e:
-                    print "No options provided, so deploying all services."
-                    deploy = Deployment(path=arguments[3])
-                    deploy.deployService(option='all')
-
-            else:
-                print "Not a valid file, provide a valid file path"
-        os._exit(0)
-    else:
-        print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
-        os._exit(0)
-
-    os._exit(0)
+    options = arguments[2:]
+    for index,option in enumerate(options):
+        if any(x in options for x in helpSet):
+            print DEPLOY_HELP
+            os._exit(0)
+        elif any(option == x for x in ['-p','--path']):
+            try:
+                file = options[index+1]
+                if fileChecker(options[index+1],('yaml','yml')):
+                    deployOption = options[len(options) - 1]
+                    deploy = Deployment()
+                    deploy = deploy.deployService(path=option[index+1],option=deployOption)
+                else:
+                    print PATH_ERROR
+                    os._exit(1)
+            except Exception as e:
+                print e
+                print PATH_ERROR
+                os._exit(1)
+        else:
+            print "Enter a valid deployment options, Use 'wrapper deploy --help' for more info"
 
 elif arguments[1].lower() == "wrapup":
     rm = RemovalManager()
-    if number_of_argument > 2:
-        if arguments[2] == "help" or arguments[2] == "--help":
-            print "\nUsage: wrapper wrapUp [OPTIONS] \n\n" \
-                  "Command to remove single node or multiple nodes from cluster\n\n" \
-                  "Option:\n" \
-                  "help-: show usage details\n" \
-                  "all-: remove all nodes from cluster\n" \
-                  "node/nodes[NAME]-: nodes name comma separated\n"
-
-        else:
-            rm.removeNodes(arguments[2:])
+    options = arguments[2:]
+    if any(x in options for x in helpSet):
+        print WRAPUP_HELP
         os._exit(0)
-    else:
-        print "\nPlease enter a valid option\nSee usage or type 'wrapper wrapUp help' for more details"
+    if len(options)==0:
+        print "\nPlease enter a valid cleanup options, Use 'wrapper wrapUp help' for more info"
         os._exit(0)
+    rm.removeNodes(options[2:])
 
 elif arguments[1] == "create":
-    if number_of_argument > 2:
-        if arguments[2] == "help" or arguments[2] == "--help":
-            print "\nUsage: wrapper create [OPTIONS] \n\n" \
-                  "Command to create cluster\n\n" \
-                  "Option:\n" \
-                  "help: show usage details\n" \
-                  "-p --path: path to config file\n"
-
-        elif arguments[2]=="-p" or arguments[2]=="--path":
-            if os.path.isfile(arguments[3]) and ".json" in arguments[3]:
-                setup = Server(path=arguments[3])
-                setup.create_cluster()
-            else:
-                print "Not a valid file, provide a valid file path"
-        os._exit(0)
-    else:
-        print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
-        os._exit(0)
+    options = arguments[2:]
+    for index,option in enumerate(options):
+        if any(x in options for x in helpSet):
+            print CREATE_HELP
+            os._exit(0)
+        elif any(option == x for x in ['-p','--path']):
+            try:
+                file = options[index+1]
+                if fileChecker(file,('json')):
+                    setup = Server(path=arguments[3])
+                    setup.create_cluster()
+                else:
+                    print PATH_ERROR
+                    os._exit(1)
+            except Exception as e:
+                print e
+                print PATH_ERROR
+                os._exit(1)
+        else:
+            print "Enter a valid create options, Use 'wrapper create --help' for more info."
+            os._exit(0)
 
 
 elif arguments[1].lower() == "swarmit":
-    if number_of_argument > 2:
-        if arguments[2] == "help" or arguments[2] == "--help":
-            print "\nUsage: wrapper swarmit [OPTIONS] \n\n" \
-                  "Command to create cluster\n\n" \
-                  "Option:\n" \
-                  "help: show usage details\n"
+    options = arguments[2:]
 
-    else:
+    if any(x in options for x in helpSet):
+        print SWARMIT_HELP
+    elif len(options) == 0:
         swarm = Swarm_Handler()
         swarm.checkNswarm()
-        os._exit(0)
+    else:
+        print "Not a valid swarm function, use 'wrapper swarmit --help' for more details."
+elif any(arguments[1].lower()==x for x in helpSet):
+    print MAIN_HELP
 
-
-if arguments[1] == "redeploy":
+elif arguments[1] == "redeploy":
     if number_of_argument > 2:
-        if arguments[2] == "help" or arguments[2] == "--help":
-            print "\nUsage: wrapper redeploy [OPTIONS] <service-name>/everything \n\n" \
-                  "Command to redploy a single service or multiple services\n\n" \
-                  "Option:\n" \
-                  "help-: show usage details\n" \
-                  "-p --path-: path to the docker-compose '.yml or .yaml' file"
+        if any(arguments[2].lower()==x for x in helpSet):
+            print REDEPLOY_HELP
         elif arguments[2] == "-p" or arguments[2] == "--path":
             if os.path.isfile(arguments[3]) and (".yaml" in arguments[3] or ".yml" in arguments[3]):
                 try:
@@ -153,4 +136,33 @@ if arguments[1] == "redeploy":
     else:
         print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
         os._exit(0)
+
+elif arguments[1] == "agent":
+    if arguments[2] == "start":
+        from flask import Flask
+        from flask_restful import Api
+
+        from flask import request
+
+
+        def shutdown_server():
+            func = request.environ.get('werkzeug.server.shutdown')
+            if func is None:
+                raise RuntimeError('Not running with the Werkzeug Server')
+            func()
+
+        app = Flask(__name__)
+        app.config['DEBUG'] = True
+        api = Api(app)
+
+
+        @app.route('/shutdown', methods=['POST'])
+        def shutdown():
+            shutdown_server()
+            return 'Server shutting down...'
+        app.run(debug=True,host="127.0.0.1")
+    if arguments[2] == "stop":
+        import requests
+        requests.post('http://127.0.0.1:5000/shutdown')
+
 

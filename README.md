@@ -94,7 +94,7 @@ Re-Deployment of a single service or the whole stack can be done by following co
 
 ```wrapper redeploy -p <path to the YAML file> all/<service name which you want to redeploy>```
 
-For more info, type **wrapper deploy --help**
+For more info, type **wrapper redeploy --help**
 
 ### Clean-Up
 

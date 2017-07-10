@@ -9,17 +9,18 @@ import os
 import  time
 
 class Deployment:
-    def __init__(self,path):
-        self.ymlPath = path
+    def __init__(self):
+
         self.file = File()
         # self.STATE = None
-        self.stream = open(path,'r+')
+
 
         try:
             print "Reading state file for deployment\n "
             self.STATE = self.file.readFile('shape.memory')
         except Exception as e:
             print e
+            print
             os._exit(1)
 
         self.master = [x for x in self.STATE.keys() if self.STATE[x]['init']][0]
@@ -28,8 +29,15 @@ class Deployment:
         self.serviceList = { x.name: x.id for x in self.listServices()}
 
 
-    def deployService(self,option):
-        self.serviceName = option
+    def deployService(self,path,option):
+        self.yml = yaml.load(open(path, 'r+'))
+        self.services = self.yml['services']
+        if option == "all" or option in self.services:
+            pass
+        else:
+            print "Not a valid service name"
+            os._exit(1)
+
         if "registry" in self.serviceList:
             print "\nRegistry already deployed, so skipping it"
         else:

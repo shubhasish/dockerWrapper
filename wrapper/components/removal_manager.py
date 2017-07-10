@@ -15,17 +15,23 @@ class RemovalManager:
             print e
             #print "\n Check if you have already initialized cluster in this folder...."
 
-    def removeNodes(self,name="all"):
-        if name[0].lower() == "all":
-            print "All nodes will  be deleted, and the workspace will be reseted."
-            for nodes in self.MASTER.keys():
-                print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
-                self.manager.rm(nodes,force=True)
-            os.remove(dir_path+"/shape.memory")
-        else:
-            print "Following nodes will be deleted"
-            for nodes in name:
-                print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
-                self.manager.rm(nodes,force=True)
-                del self.MASTER[nodes]
-            self.file.writeFile(self.MASTER)
+    def removeNodes(self,nodes="all"):
+        for node in nodes:
+            if "all" in nodes:
+                print "All nodes will  be deleted, and the workspace will be reseted."
+                for nodes in self.MASTER.keys():
+                    print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
+                    self.manager.rm(nodes,force=True)
+                os.remove(dir_path+"/shape.memory")
+                os._exit(0)
+            else:
+                print "%s will be deleted"%node
+                print "Checking for sanity of node...."
+                if node in self.MASTER:
+                    print "Deleting ...\n%s\t%s"%(nodes,self.MASTER[nodes]['ip'])
+                    self.manager.rm(nodes,force=True)
+                    del self.MASTER[nodes]
+                else:
+                    print "%s is not a valid node, no such node is present in cluster"%node
+                    continue
+        self.file.writeFile(self.MASTER)
