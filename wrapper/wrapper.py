@@ -55,6 +55,7 @@ if any(arguments[1].lower()==x for x in helpSet):
 ##### Create Module
 elif arguments[1] == "create":
     options = arguments[2:]
+
     for index,option in enumerate(options):
         if any(x in options for x in helpSet):
             print CREATE_HELP
@@ -97,17 +98,19 @@ elif arguments[1].lower() == "swarmit":
 ##### Deploy Module
 elif arguments[1] == "deploy":
     options = arguments[2:]
+    if any(x in options for x in helpSet):
+        print DEPLOY_HELP
+        os._exit(0)
     for index,option in enumerate(options):
-        if any(x in options for x in helpSet):
-            print DEPLOY_HELP
-            os._exit(0)
-        elif any(option == x for x in ['-p','--path']):
+
+        if any(option == x for x in ['-p','--path']):
             try:
                 file = options[index+1]
+
                 if fileChecker(options[index+1],('yaml','yml')):
                     deployOption = options[len(options) - 1]
                     deploy = Deployment()
-                    deploy = deploy.deployService(path=option[index+1],option=deployOption)
+                    deploy = deploy.deployService(path=options[index+1],option=deployOption)
                 else:
                     print PATH_ERROR
                     os._exit(1)
@@ -126,8 +129,8 @@ elif arguments[1] == "redeploy":
         elif arguments[2] == "-p" or arguments[2] == "--path":
             if os.path.isfile(arguments[3]) and (".yaml" in arguments[3] or ".yml" in arguments[3]):
                 try:
-                    deploy = Deployment(path=arguments[3])
-                    deploy.reDeploy(serviceName=arguments[4])
+                    deploy = Deployment()
+                    deploy.reDeploy(path=arguments[3],serviceName=arguments[4])
                 except Exception as e:
                     print e
 

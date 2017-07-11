@@ -2,10 +2,12 @@ import docker
 from copy import deepcopy
 import yaml
 from config import getClient
+from config import WRAPPER_DB_PATH
 from modules.fileFormatter import File
 import os
 import  time
 from flask_restful import Resource
+import pickledb
 
 class Deployment(Resource):
     def __init__(self):
@@ -13,18 +15,17 @@ class Deployment(Resource):
         self.file = File()
         # self.STATE = None
 
-
         try:
-            print "Reading state file for deployment\n "
-            self.STATE = self.file.readFile('shape.memory')
+            self.db = pickledb.load(WRAPPER_DB_PATH,False)
+            self.SERVERS = self.db.get('servers')
+            self.swarm = self.db.get('swarm')
         except Exception as e:
-            print e
-            print
-            os._exit(1)
+            pass
 
-        self.master = [x for x in self.STATE.keys() if self.STATE[x]['init']][0]
+
+        self.master = [x for x in self.SERVERS.keys() if self.SERVERS[x]['init']][0]
         print "\nMaster Node of this cluster: %s"%self.master
-        self.masterMachine = getClient(self.master,self.STATE[self.master]['url'])
+        self.masterMachine = getClient(self.master,self.SERVERS[self.master]['url'])
         self.serviceList = { x.name: x.id for x in self.listServices()}
 
 
@@ -61,7 +62,7 @@ class Deployment(Resource):
 
         ### Create an Overlay Network
         self.network = self.createNetwork()
-        servicesDict = self.getServicesList(option=self.serviceName)
+        servicesDict = self.getServicesList(option=option)
         for service in servicesDict.keys():
             if "build" in servicesDict[service]:
                 servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
@@ -76,7 +77,14 @@ class Deployment(Resource):
             else:
                 self.createService(servicesDict[service])
 
-    def reDeploy(self,serviceName):
+    def reDeploy(self,path,serviceName):
+        self.yml = yaml.load(open(path, 'r+'))
+        self.services = self.yml['services']
+        if serviceName == "all" or serviceName in self.services:
+            pass
+        else:
+            print "Not a valid service name"
+            os._exit(1)
         servicesDict = self.getServicesList(option=serviceName)
 
         for service in servicesDict.keys():
@@ -169,15 +177,14 @@ class Deployment(Resource):
 
 
     def getServicesList(self,option):
-        services =  yaml.load(self.stream)['services']
         serviceDict = {}
         if option == 'all':
-            for service in services:
-                deployOptions = self.getOptions(services[service])
+            for service in self.services.keys():
+                deployOptions = self.getOptions(self.services[service])
                 deployOptions['name'] = service
                 serviceDict[service] = deepcopy(deployOptions)
         else:
-            deployOptions = self.getOptions(services[option])
+            deployOptions = self.getOptions(self.services[option])
             deployOptions['name'] = option
             serviceDict[option] = deepcopy(deployOptions)
         return serviceDict
