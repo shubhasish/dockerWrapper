@@ -16,6 +16,24 @@ CONFIG_FORMATT = {"url":"",
                   "init": False,
                   "swarm": False}
 
+API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
+            'deploy':'/v1/api/wrapper/deploy',
+            'redeploy':'/v1/api/wrapper/re-deploy',
+            'monitor':'/v1/api/wrapper/monitor',
+            'create':'/v1/api/wrapper/create',
+            'swarm':'/v1/api/wrapper/swarm',
+            'wrapup':'/v1/api/wrapper/wrapup',
+            'node_list':'',
+            'node_update':'',
+            'node_get':'',
+            'service_list':'',
+            'service_get':'',
+            'service_task':'',
+            'service_update':'',
+            'service_remove':'',
+            'service_reload':''}
+
+WRAPPER_DB_PATH = "wrapper.db"
 
 def getClient(name, url):
     tls = TLS()

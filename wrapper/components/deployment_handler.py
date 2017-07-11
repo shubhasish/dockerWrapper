@@ -1,14 +1,13 @@
 import docker
 from copy import deepcopy
 import yaml
-from config import DM_URL
-from config import dir_path
 from config import getClient
 from modules.fileFormatter import File
 import os
 import  time
+from flask_restful import Resource
 
-class Deployment:
+class Deployment(Resource):
     def __init__(self):
 
         self.file = File()

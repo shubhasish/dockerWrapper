@@ -8,3 +8,5 @@ build/
 *.jar
 *.sh
 *.xml
+*.db
+*.conf

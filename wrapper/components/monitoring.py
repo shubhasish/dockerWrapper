@@ -3,8 +3,9 @@ from modules.machine import Machine
 from config import DM_URL
 import os
 from modules.fileFormatter import File
+from flask_restful import Resource
 
-class Monitoring:
+class Monitoring(Resource):
 
     def __init__(self):
 

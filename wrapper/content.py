@@ -1,7 +1,7 @@
 #### Help Contents
 
 MAIN_HELP = "Usage: wrapper COMMAND\n" \
-            "A docker swarm orchestration and managemnet tool\n\n" \
+            "A docker swarm orchestration and management tool\n\n" \
             "Commands\n\n" \
             "create\t\t create/provisoning a single node or a group of nodes\n" \
             "swarmit\t\t initialize swarm and create a cluster\n" \
@@ -31,7 +31,7 @@ CREATE_HELP = "Usage: wrapper create [OPTIONS] \n\n" \
               "Options\n\n" \
               "-p --path\t\t path to JSON config file\n"
 
-SWARMIT_HELP = "Usage: wrapper swarmit [OPTIONS]\n\n" \
+SWARMIT_HELP = "Usage: wrapper swarmit [OPTIONS] <cluster-name>\n\n" \
                "Command to create a swarm cluster\n\n" \
                "Option\n\n"
 
