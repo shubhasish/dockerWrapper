@@ -34,7 +34,7 @@ class RemovalManager(Resource):
             for nodes in self.SERVERS.keys():
                 print "Deleting ...\n%s\t%s" % (nodes, self.SERVERS[nodes]['ip'])
                 self.manager.rm(nodes, force=True)
-            os.remove(dir_path + "/wrapper.db")
+            os.remove(WRAPPER_DB_PATH)
             return "Whole cluster is deleted"
         for node in nodes:
             print "%s will be deleted"%node

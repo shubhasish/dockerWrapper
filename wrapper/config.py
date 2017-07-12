@@ -33,7 +33,7 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
             'service_remove':'',
             'service_reload':''}
 
-WRAPPER_DB_PATH = "wrapper.db"
+WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
 
 def getClient(name, url):
     tls = TLS()

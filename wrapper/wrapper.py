@@ -151,7 +151,7 @@ elif arguments[1].lower() == "wrapup":
     if len(options)==0:
         print "\nPlease enter a valid cleanup options, Use 'wrapper wrapUp help' for more info"
         os._exit(0)
-    rm.removeNodes(options[2:])
+    rm.removeNodes(options)
 
 ###### Agnet Module
 elif arguments[1] == "agent":
