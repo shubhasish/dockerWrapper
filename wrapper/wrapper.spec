@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['wrapper.py'],
-             pathex=['/home/subhasishp/PycharmProjects/dockerWrapper/wrapper'],
+             pathex=['/Users/shubhasish/dockerWrapper/wrapper'],
              binaries=[],
              datas=[],
              hiddenimports=[],

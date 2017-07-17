@@ -2,7 +2,7 @@
 .idea/
 *.pyc
 shape.memory
-mainFile.spec
+*.spec
 dist/
 build/
 *.jar

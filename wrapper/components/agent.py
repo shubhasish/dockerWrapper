@@ -10,6 +10,8 @@ from monitoring import Monitoring
 from server_setup import Server
 from swarm_handler import Swarm_Handler
 from removal_manager import RemovalManager
+from service_handler import GetService, ListServices, UpdateServices, ListTasks, RemoveService
+from nodes_handler import GetNodes, ListNodes, UpdateNodes
 
 
 class Agent(Resource):
@@ -28,18 +30,22 @@ class Agent(Resource):
     def startAgent(self):
         app = Flask(__name__)
 
-        # app.config['DEBUG'] = True
 
         api = Api(app)
         api.add_resource(Agent,API_DICT['shutdown'])
         api.add_resource(Server,API_DICT['create'])
         api.add_resource(Swarm_Handler,API_DICT['swarm'])
         api.add_resource(RemovalManager,API_DICT['wrapup'])
+        api.add_resource(GetService, API_DICT['service_get'])
+        api.add_resource(ListServices, API_DICT['service_list'])
+        api.add_resource(UpdateServices, API_DICT['service_update'])
+        api.add_resource(RemoveService, API_DICT['service_remove'])
+        api.add_resource(ListTasks, API_DICT['service_task'])
+        api.add_resource(GetNodes, API_DICT['node_get'])
+        api.add_resource(ListNodes, API_DICT['node_list'])
+        api.add_resource(UpdateNodes, API_DICT['node_update'])
 
-        # @app.route(API_DICT['create'],methods=['POST'])
-        # def printI():
-        #     print request.get_json()
-        #     return "Hello"
+
 
 
         app.run(debug=True, host=self.host,port=self.port)
