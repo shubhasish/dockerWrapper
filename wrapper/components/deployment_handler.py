@@ -11,7 +11,6 @@ import pickledb
 
 class Deployment(Resource):
     def __init__(self):
-
         self.file = File()
         # self.STATE = None
 
@@ -72,7 +71,6 @@ class Deployment(Resource):
 
                 servicesDict[service]['image'] = servicesDict[service]['build']['tag']
                 del servicesDict[service]['build']
-
                 self.createService(servicesDict[service])
             else:
                 self.createService(servicesDict[service])
@@ -86,23 +84,15 @@ class Deployment(Resource):
             print "Not a valid service name"
             os._exit(1)
         servicesDict = self.getServicesList(option=serviceName)
-
         for service in servicesDict.keys():
             print "Removing Service %s" % service
             self.serviceRemover(service)
             if "build" in servicesDict[service]:
                 servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
-
                 print "Removing any previous images"
-
                 time.sleep(10)
                 self.imageCleaner(servicesDict[service]['build']['tag'])
-
-
                 servicesDict[service]['build']['stream'] = True
-
-
-
                 print "Building Image"
                 image = self.imageBuilder(**servicesDict[service]['build'])
                 print "Pushing Image to Local Registry"
