@@ -8,13 +8,16 @@ class File:
 
     def readFile(self,name):
 
-        self.db = None
+        self.file = None
         try:
-            self.db = pickledb.load(WRAPPER_DB_PATH,False)
-            self.SERVERS = self.db.get('servers')
+            self.file = open(name,'r+')
+            self.contents = self.file.read()
+            print "===================================Configurations======================================="
+            print self.contents
+            print "========================================================================================\n"
         except Exception as e:
             pass
-        return json.loads(contents)
+        return json.loads(self.contents)
 
     def writeFile(self,dict):
         try:

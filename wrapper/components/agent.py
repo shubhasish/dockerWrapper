@@ -10,8 +10,9 @@ from monitoring import Monitoring
 from server_setup import Server
 from swarm_handler import Swarm_Handler
 from removal_manager import RemovalManager
-from service_handler import GetService, ListServices, UpdateServices, ListTasks, RemoveService
+from service_handler import  ListServices,GetService, ListTasks, RemoveService #, UpdateServices, , , ,
 from nodes_handler import GetNodes, ListNodes, UpdateNodes
+from image_manger import ImageBuilder
 
 
 class Agent(Resource):
@@ -33,12 +34,13 @@ class Agent(Resource):
 
         api = Api(app)
         api.add_resource(Agent,API_DICT['shutdown'])
+        api.add_resource(ImageBuilder,API_DICT['build'])
         api.add_resource(Server,API_DICT['create'])
         api.add_resource(Swarm_Handler,API_DICT['swarm'])
         api.add_resource(RemovalManager,API_DICT['wrapup'])
         api.add_resource(GetService, API_DICT['service_get'])
         api.add_resource(ListServices, API_DICT['service_list'])
-        api.add_resource(UpdateServices, API_DICT['service_update'])
+       # api.add_resource(UpdateServices, API_DICT['service_update'])
         api.add_resource(RemoveService, API_DICT['service_remove'])
         api.add_resource(ListTasks, API_DICT['service_task'])
         api.add_resource(GetNodes, API_DICT['node_get'])
@@ -48,7 +50,7 @@ class Agent(Resource):
 
 
 
-        app.run(debug=True, host=self.host,port=self.port)
+        app.run(debug=True, host=self.host,port=self.port,use_reloader=False)
 
 
     def shutdown_server(self):

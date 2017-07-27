@@ -13,7 +13,6 @@ class Deployment(Resource):
     def __init__(self):
         self.file = File()
         # self.STATE = None
-
         try:
             self.db = pickledb.load(WRAPPER_DB_PATH,False)
             self.SERVERS = self.db.get('servers')

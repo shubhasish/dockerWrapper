@@ -36,10 +36,13 @@ class Swarm_Handler(Resource):
         self.swarmList = set()
         self.manager = Machine(path=DM_URL)
         try:
+
             self.db = pickledb.load(WRAPPER_DB_PATH,False)
+
             self.SERVERS = self.db.get('servers')
             self.swarm = self.db.get('swarm')
         except Exception as e:
+            print e
             pass
 
         # try:
@@ -57,7 +60,9 @@ class Swarm_Handler(Resource):
         #     pass
 
     def checkNswarm(self,swarmName):
+
         self.db.set('swarm',swarmName)
+
         for server in self.SERVERS.keys():
             if self.SERVERS[server]['role'].lower() == "manager":
                 if self.SERVERS[server]['swarm']:
@@ -73,6 +78,7 @@ class Swarm_Handler(Resource):
                     self.swarmList.add(server)
                 else:
                     self.slaveSet.add(server)
+        self.db.set('Master',list(self.masterSet))
         # print self.swarmList
         if len(self.swarmList) > 0:
             print "Swarm has already been initialized with %s"%self.mainMaster
@@ -120,12 +126,14 @@ class Swarm_Handler(Resource):
                 self.db.set('servers',self.SERVERS)
                 self.db.dump()
             print "Joining Swarm....."
+
             masterThread = Thread(target=self.swarm_join,args=(self.masterSet,joinTokens[0],self.mainMaster,))
             slaveThread = Thread(target=self.swarm_join,args=(self.slaveSet,joinTokens[1],self.mainMaster,))
             masterThread.start()
             slaveThread.start()
             masterThread.join()
             slaveThread.join()
+
             print "Swarm Cluster created Successfully"
             return "Swarm Cluster created Successfully"
 

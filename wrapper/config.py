@@ -26,11 +26,12 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
             'node_list':'/v1/api/wrapper/nodes',
             'node_update':'/v1/api/nodes/update',
             'node_get':'/v1/api/nodes/get',
-            'service_list':'/v1/api/services',
-            'service_get':'/v1/api/services/get',
-            'service_task':'/v1/api/services/tasks',
-            'service_update':'/v1/api/services/update',
-            'service_remove':'/v1/api/services/remove'}
+            'service_list':'/v1/api/service',
+            'service_get':'/v1/api/service/<name>',
+            'service_task':'/v1/api/service/tasks/<name>',
+            'service_update':'/v1/api/service/update',
+            'service_remove':'/v1/api/service/remove/<name>',
+            'build':'/v1/api/image/build'}
 
 WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
 

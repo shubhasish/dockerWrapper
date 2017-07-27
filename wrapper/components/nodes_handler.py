@@ -21,6 +21,9 @@ def getServers():
         print e
     return None
 
+def nodeFormater(node):
+    return {'id':node.id,'short_id':node.short_id,'attrs':node.attrs,'version':node.version}
+
 class ListNodes(Resource):
 
     def post(self):
@@ -34,13 +37,14 @@ class ListNodes(Resource):
     def listNode(self):
         servers = getServers()
         if servers:
-            masterList = getMaster()[0]
+            masterList = getMaster()
             if masterList:
                 url = servers[masterList[0]]['url']
                 name = masterList[0]
                 client = getClient(name,url)
                 nodes = client.nodes.list()
-                return {'status':'success','message':nodes}
+
+                return {'status':'success','message':[nodeFormater(x) for x in nodes]}
             else:
                 return {'status':'failure','message':'Swarm has not been initialized. Please initialize swarm'}
         else:
@@ -52,6 +56,7 @@ class GetNodes(Resource):
     def post(self):
         details = request.get_json()
         node = details['node']
+        print type(node)
         nodeDetails = self.getNode(node)
         return nodeDetails
 
@@ -59,15 +64,17 @@ class GetNodes(Resource):
         return 'Wrong Method, Use POST instead'
 
     def getNode(self,node):
+
         servers = getServers()
         if servers:
-            masterList = getMaster()[0]
+            masterList = getMaster()
+
             if masterList:
                 url = servers[masterList[0]]['url']
                 name = masterList[0]
                 client = getClient(name, url)
                 details = client.nodes.get(node)
-                return {'status': 'success', 'message': details}
+                return {'status': 'success', 'message': nodeFormater(details)}
             else:
                 return {'status': 'failure', 'message': 'Swarm has not been initialized. Please initialize swarm'}
         else:
@@ -80,7 +87,7 @@ class UpdateNodes(Resource):
     def post(self):
         details = request.get_json()
         node = details['node']
-        specifications= details['node']
+        specifications= details['specs']
         updateStatus = self.updateNode(node,specifications)
         return updateStatus
 
@@ -89,7 +96,8 @@ class UpdateNodes(Resource):
         return "Wrong Method, Use POST instead"
 
     def updateNode(self,node,specification):
-        node = GetNodes.getNode(node)
+        getNode = GetNodes()
+        node = getNode.getNode(node)
         if node['status'] == "failure":
             return node
         try:
