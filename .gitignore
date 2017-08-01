@@ -1,0 +1,12 @@
+.idea/workspace.xml
+.idea/
+*.pyc
+shape.memory
+*.spec
+dist/
+build/
+*.jar
+*.sh
+*.xml
+*.db
+*.conf
