@@ -19,6 +19,7 @@ class Swarm_Handler(Resource):
         return "Wrong method, Use POST instead"
 
     def post(self):
+        self.template()
         swarmName = request.get_json()['swarm']
 
         message = self.checkNswarm(swarmName)
@@ -26,7 +27,7 @@ class Swarm_Handler(Resource):
         return {'message':message}
 
 
-    def __init__(self):
+    def template(self):
         self.SERVERS = dict()
         self.file = File()
         self.masterSet= set()

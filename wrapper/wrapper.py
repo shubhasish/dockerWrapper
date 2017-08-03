@@ -18,6 +18,7 @@ from content import PATH_ERROR
 from modules.dockerMachine import dockerMachine
 from modules.fileFormatter import File
 from modules.swarm import Swarm
+from API_connector import RequestHandler
 
 from components.removal_manager import RemovalManager
 from components.server_setup import Server
@@ -67,12 +68,15 @@ elif arguments[1] == "create":
                     try:
                         print "Reading Configuration File"
                         file = fileReader.readFile(file)
+                        create_req = RequestHandler()
+                        create_req.createRequestHandler(file)
+
                     except Exception as e:
                         print e
                         print "Exiting Cluster Creation Process"
                         os._exit(1)
-                    setup = Server()
-                    setup.create_cluster(file)
+                    # setup = Server()
+                    # setup.create_cluster(file)
                 else:
                     print PATH_ERROR
                     os._exit(1)
@@ -90,8 +94,8 @@ elif arguments[1].lower() == "swarmit":
     if any(x in options for x in helpSet):
         print SWARMIT_HELP
     elif len(options) == 1 and options[0].isalnum():
-        swarm = Swarm_Handler()
-        swarm.checkNswarm(options[0])
+        create_req = RequestHandler()
+        create_req.swarmRequestHandler(options[0])
     else:
         print "Not a valid swarm function, use 'wrapper swarmit --help' for more details."
 
@@ -109,8 +113,10 @@ elif arguments[1] == "deploy":
 
                 if fileChecker(options[index+1],('yaml','yml')):
                     deployOption = options[len(options) - 1]
-                    deploy = Deployment()
-                    deploy = deploy.deployService(path=options[index+1],option=deployOption)
+                    create_req = RequestHandler()
+                    create_req.deployHandler(path=options[index+1],deployOption=deployOption)
+                    # deploy = Deployment()
+                    # deploy = deploy.deployService(path=options[index+1],option=deployOption)
                 else:
                     print PATH_ERROR
                     os._exit(1)
@@ -133,7 +139,6 @@ elif arguments[1] == "redeploy":
                     deploy.reDeploy(path=arguments[3],serviceName=arguments[4])
                 except Exception as e:
                     print e
-
             else:
                 print "Not a valid file, provide a valid file path"
         os._exit(0)
@@ -151,7 +156,7 @@ elif arguments[1].lower() == "wrapup":
     if len(options)==0:
         print "\nPlease enter a valid cleanup options, Use 'wrapper wrapUp help' for more info"
         os._exit(0)
-    rm.removeNodes(options)
+    print rm.removeNodes(options)
 
 ###### Agnet Module
 elif arguments[1] == "agent":

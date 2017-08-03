@@ -6,11 +6,11 @@ from config import WRAPPER_DB_PATH
 from modules.fileFormatter import File
 import os
 import  time
-from flask_restful import Resource
+from flask_restful import Resource, request
 import pickledb
 
 class Deployment(Resource):
-    def __init__(self):
+    def template(self):
         self.file = File()
         # self.STATE = None
         try:
@@ -27,52 +27,66 @@ class Deployment(Resource):
         self.serviceList = { x.name: x.id for x in self.listServices()}
 
 
-    def deployService(self,path,option):
-        self.yml = yaml.load(open(path, 'r+'))
-        self.services = self.yml['services']
-        if option == "all" or option in self.services:
+    def post(self):
+        self.template()
+        postJson = request.get_json()
+        self.serviceName = postJson['serviceName']
+        self.services = postJson['contents']
+        message = self.deployService()
+        return {'message':message}
+
+    def deployService(self):
+        # self.yml = yaml.load(open(path, 'r+'))
+        # self.services = self.yml['services']
+        if self.serviceName == "all" or self.serviceName in self.services:
             pass
         else:
-            print "Not a valid service name"
-            os._exit(1)
+            return "Not a valid service name"
+            #os._exit(1)
 
-        if "registry" in self.serviceList:
-            print "\nRegistry already deployed, so skipping it"
-        else:
-            print "\nDeploying local registry.."
-            try:
-                serviceId = self.createRegistry()
-                print "\nService Deployed Successfully with service id: %s"%serviceId.id
-            except Exception as e:
-                print e
-                print "\nRegistry not deployed, Custom built image may not work properly, so exiting program."
-                os._exit(1)
-        if "portainer" in self.serviceList:
-            print "\nPortainer already deployed, so skipping it"
-        else:
-            print "\nDeploying Portainer.."
-            try:
-                serviceId = self.deployUI()
-                print "\nService Deployed Successfully with service id: %s" % serviceId.id
-            except Exception as e:
-                print e
-                print "\nPortainer not Deployed. UI may not be available."
+##------------------------------------------ Not necessary in version 2-----------------------------##
+
+        # if "registry" in self.serviceList:
+        #     print "\nRegistry already deployed, so skipping it"
+        # else:
+        #     print "\nDeploying local registry.."
+        #     try:
+        #         serviceId = self.createRegistry()
+        #         print "\nService Deployed Successfully with service id: %s"%serviceId.id
+        #     except Exception as e:
+        #         print e
+        #         print "\nRegistry not deployed, Custom built image may not work properly, so exiting program."
+        #         os._exit(1)
+        # if "portainer" in self.serviceList:
+        #     print "\nPortainer already deployed, so skipping it"
+        # else:
+        #     print "\nDeploying Portainer.."
+        #     try:
+        #         serviceId = self.deployUI()
+        #         print "\nService Deployed Successfully with service id: %s" % serviceId.id
+        #     except Exception as e:
+        #         print e
+        #         print "\nPortainer not Deployed. UI may not be available."
 
         ### Create an Overlay Network
         self.network = self.createNetwork()
-        servicesDict = self.getServicesList(option=option)
+        servicesDict = self.getServicesList()
         for service in servicesDict.keys():
-            if "build" in servicesDict[service]:
-                servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
-                servicesDict[service]['build']['stream'] = True
-                image = self.imageBuilder(**servicesDict[service]['build'])
-                self.pushImageToRegistry(servicesDict[service]['build']['tag'])
+            self.createService(servicesDict[service])
+        return "Hello"
 
-                servicesDict[service]['image'] = servicesDict[service]['build']['tag']
-                del servicesDict[service]['build']
-                self.createService(servicesDict[service])
-            else:
-                self.createService(servicesDict[service])
+##---------------------------------------------- Separate API for build ----------------------------#
+        #     if "build" in servicesDict[service]:
+        #         servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
+        #         servicesDict[service]['build']['stream'] = True
+        #         image = self.imageBuilder(**servicesDict[service]['build'])
+        #         self.pushImageToRegistry(servicesDict[service]['build']['tag'])
+        #
+        #         servicesDict[service]['image'] = servicesDict[service]['build']['tag']
+        #         del servicesDict[service]['build']
+        #         self.createService(servicesDict[service])
+        #     else:
+        #         self.createService(servicesDict[service])
 
     def reDeploy(self,path,serviceName):
         self.yml = yaml.load(open(path, 'r+'))
@@ -82,29 +96,35 @@ class Deployment(Resource):
         else:
             print "Not a valid service name"
             os._exit(1)
-        servicesDict = self.getServicesList(option=serviceName)
+        servicesDict = self.getServicesList()
+        dict = {}
         for service in servicesDict.keys():
-            print "Removing Service %s" % service
-            self.serviceRemover(service)
-            if "build" in servicesDict[service]:
-                servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
-                print "Removing any previous images"
-                time.sleep(10)
-                self.imageCleaner(servicesDict[service]['build']['tag'])
-                servicesDict[service]['build']['stream'] = True
-                print "Building Image"
-                image = self.imageBuilder(**servicesDict[service]['build'])
-                print "Pushing Image to Local Registry"
-                self.pushImageToRegistry(servicesDict[service]['build']['tag'])
+            serviceId = self.createService(servicesDict[service])
+            dict[service] = serviceId
+        return dict
 
-                servicesDict[service]['image'] = servicesDict[service]['build']['tag']
-                del servicesDict[service]['build']
-
-                print "Creating Service"
-                self.createService(servicesDict[service])
-            else:
-                print "Creating Service"
-                self.createService(servicesDict[service])
+#--------------------------- No more need of removal and re-deploy. Use the separate APi ------------
+            # print "Removing Service %s" % service
+            # self.serviceRemover(service)
+            # if "build" in servicesDict[service]:
+            #     servicesDict[service]['build']['tag'] = "127.0.0.1:5000/%s"%servicesDict[service]['image']
+            #     print "Removing any previous images"
+            #     time.sleep(10)
+            #     self.imageCleaner(servicesDict[service]['build']['tag'])
+            #     servicesDict[service]['build']['stream'] = True
+            #     print "Building Image"
+            #     image = self.imageBuilder(**servicesDict[service]['build'])
+            #     print "Pushing Image to Local Registry"
+            #     self.pushImageToRegistry(servicesDict[service]['build']['tag'])
+            #
+            #     servicesDict[service]['image'] = servicesDict[service]['build']['tag']
+            #     del servicesDict[service]['build']
+            #
+            #     print "Creating Service"
+            #     self.createService(servicesDict[service])
+            # else:
+            #     print "Creating Service"
+            #     self.createService(servicesDict[service])
 
 
 #----------------------------------------------------------------------------
@@ -140,15 +160,22 @@ class Deployment(Resource):
         else:
             dict['networks'] = ['icarus']
         image = dict.pop('image')
+        if 'build' in dict:
+            dict.pop('build')
         command = None
         if "command" in dict:
             command = dict.pop('command')
         serviceId = self.masterMachine.services.create(image=image,command=command,**dict)
         print "\nService Deployed Successfully with service id: %s" % serviceId.id
+        return serviceId
 
     def createNetwork(self):
-        network = self.masterMachine.networks.create('icarus',driver="overlay")
-        return network
+        networks = [x.name for x in self.masterMachine.networks.list()]
+        if 'icarus' in networks:
+            pass
+        else:
+            network = self.masterMachine.networks.create('icarus',driver="overlay")
+        return None
 
 #------------------------------------------------------------------
 
@@ -165,17 +192,17 @@ class Deployment(Resource):
 
 
 
-    def getServicesList(self,option):
+    def getServicesList(self):
         serviceDict = {}
-        if option == 'all':
+        if self.serviceName == 'all':
             for service in self.services.keys():
                 deployOptions = self.getOptions(self.services[service])
                 deployOptions['name'] = service
                 serviceDict[service] = deepcopy(deployOptions)
         else:
-            deployOptions = self.getOptions(self.services[option])
-            deployOptions['name'] = option
-            serviceDict[option] = deepcopy(deployOptions)
+            deployOptions = self.getOptions(self.services[self.serviceName])
+            deployOptions['name'] = self.serviceName
+            serviceDict[self.serviceName] = deepcopy(deployOptions)
         return serviceDict
 
 

@@ -31,9 +31,13 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
             'service_task':'/v1/api/service/tasks/<name>',
             'service_update':'/v1/api/service/update',
             'service_remove':'/v1/api/service/remove/<name>',
-            'build':'/v1/api/image/build'}
+            'build':'/v1/api/image/build',
+            'registry':'/v1/api/registry',
+            'image_push':'/v1/api/image/push'}
 
 WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
+DOCKER_FILE_PATH = expanduser('~')+ "/.wrapper/build/"
+
 
 def getClient(name, url):
     tls = TLS()

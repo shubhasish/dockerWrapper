@@ -10,9 +10,11 @@ from monitoring import Monitoring
 from server_setup import Server
 from swarm_handler import Swarm_Handler
 from removal_manager import RemovalManager
+from deployment_handler import Deployment
 from service_handler import  ListServices,GetService, ListTasks, RemoveService #, UpdateServices, , , ,
 from nodes_handler import GetNodes, ListNodes, UpdateNodes
-from image_manger import ImageBuilder
+from image_manger import ImageBuilder,ImagePusher
+from registry_handler import RegistryHandler
 
 
 class Agent(Resource):
@@ -46,11 +48,14 @@ class Agent(Resource):
         api.add_resource(GetNodes, API_DICT['node_get'])
         api.add_resource(ListNodes, API_DICT['node_list'])
         api.add_resource(UpdateNodes, API_DICT['node_update'])
+        api.add_resource(Deployment, API_DICT['deploy'])
+        api.add_resource(RegistryHandler,API_DICT['registry'])
+        api.add_resource(ImagePusher,API_DICT['image_push'])
 
 
 
 
-        app.run(debug=True, host=self.host,port=self.port,use_reloader=False)
+        app.run(debug=True, host=self.host,port=self.port,use_reloader=True)
 
 
     def shutdown_server(self):

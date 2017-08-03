@@ -14,20 +14,24 @@ from flask_restful import request
 
 
 class Server(Resource):
-    def __init__(self):
-        self.SERVERS = dict()
-        self.file = File()
-        self.manager = Machine(path=DM_URL)
-        try:
-            self.db = pickledb.load(WRAPPER_DB_PATH,False)
-            self.SERVERS = self.db.get('servers')
-        except Exception as e:
-            pass
+
 
     def get(self):
         return "Wrong Method, Use POST intead"
 
+    def template(self):
+        self.SERVERS = dict()
+        self.file = File()
+        self.manager = Machine(path=DM_URL)
+        print "Inside Post Method"
+        try:
+            self.db = pickledb.load(WRAPPER_DB_PATH, False)
+            self.SERVERS = self.db.get('servers')
+        except Exception as e:
+            pass
+
     def post(self):
+        self.template()
         serverDict = request.get_json()
         self.create_cluster(serverDict)
         return {x:self.SERVERS[x] for x in serverDict.keys()}
@@ -35,6 +39,7 @@ class Server(Resource):
     def create_cluster(self,serverDict):
         print "\nGetting machines to be created"
         self.required_nodes = serverDict
+        print self.required_nodes
         print "\nGetting existing nodes in the cluster"
         self.existing_nodes = self.SERVERS
 

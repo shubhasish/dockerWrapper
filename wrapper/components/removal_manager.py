@@ -6,6 +6,7 @@ from config import dir_path
 from config import WRAPPER_DB_PATH
 from modules.machine import Machine
 from flask_restful import request,Resource
+from flask import Response
 
 class RemovalManager(Resource):
 
@@ -25,10 +26,13 @@ class RemovalManager(Resource):
             self.db = pickledb.load(WRAPPER_DB_PATH,False)
             self.SERVERS = self.db.get('servers')
         except Exception as e:
+            #pass
             pass
-            #print "\n Check if you have already initialized cluster in this folder...."
 
     def removeNodes(self,nodes=["all"]):
+        if not self.SERVERS:
+            return "Check if you have already initialized cluster"
+
         if "all" in nodes:
             print "All nodes will  be deleted, and the workspace will be reseted."
             for nodes in self.SERVERS.keys():
