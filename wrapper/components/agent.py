@@ -18,7 +18,7 @@ from registry_handler import RegistryHandler
 
 
 class Agent(Resource):
-    def __init__(self,host='0.0.0.0',port=5000):
+    def __init__(self,host='0.0.0.0',port=5001):
         self.host = host
         self.port = port
 

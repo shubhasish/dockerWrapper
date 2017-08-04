@@ -3,7 +3,7 @@ import config
 import yaml
 
 class RequestHandler:
-    def __init__(self,host="localhost",port=5000):
+    def __init__(self,host="localhost",port=5001):
         self.host = host
         self.port = port
 

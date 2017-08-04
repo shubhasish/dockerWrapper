@@ -96,15 +96,27 @@ class RemoveService(Resource):
                 name = masterList[0]
                 client = getClient(name, url)
                 services = client.services.list()
-                service = [x for x in services if x.name == serviceName]
-                if service:
-                    try:
-                        service[0].remove()
-                        return {'status': 'success', 'message': 'Service removed successfully'}
-                    except Exception as e:
-                        return {'status':'failure','message':e.message}
+                if serviceName == "all":
+                    for service in services:
+                        try:
+                            if service.name == "regitry":
+                                continue
+                            else:
+                                service.remove()
+
+                        except Exception as e:
+                            return {'status': 'failure', 'message': e.message}
+                    return {'status': 'success', 'message': 'Services removed successfully'}
                 else:
-                    return {'status': 'failure', 'message': 'No such service found, Enter a valid service name'}
+                    service = [x for x in services if x.name == serviceName]
+                    if service:
+                        try:
+                            service[0].remove()
+                            return {'status': 'success', 'message': 'Service removed successfully'}
+                        except Exception as e:
+                            return {'status':'failure','message':e.message}
+                    else:
+                        return {'status': 'failure', 'message': 'No such service found, Enter a valid service name'}
             else:
                 return {'status': 'failure', 'message': 'Swarm has not been initialized. Please initialize swarm'}
         else:

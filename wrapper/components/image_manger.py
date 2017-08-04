@@ -85,8 +85,18 @@ class ImagePusher(Resource):
         imagesList =[x['RepoTags'][0] for x in cli.images()]
         def image_pusher():
             if image in imagesList:
-                for x in  cli.push(image):
-                    yield x
+                push = cli.push(image,stream=True)
+                for line in  push:
+                    if "error" in line:
+                        yield json.loads(line)['error']
+                    else:
+                        jsonObject = json.loads(line)
+                        for x in jsonObject.keys():
+                            if x == "progressDetail":
+                                continue
+                            else:
+                                yield jsonObject[x]
+                                yield '\n'
 
             else:
                 yield {'message':'No such Image Found'}
