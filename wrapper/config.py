@@ -37,6 +37,7 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
 
 WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
 DOCKER_FILE_PATH = expanduser('~')+ "/.wrapper/build/"
+DEPLOYMENT_FILE_PATH = expanduser('~')+ "/.wrapper/deploy/"
 
 
 def getClient(name, url):

@@ -23,7 +23,6 @@ class Server(Resource):
         self.SERVERS = dict()
         self.file = File()
         self.manager = Machine(path=DM_URL)
-        print "Inside Post Method"
         try:
             self.db = pickledb.load(WRAPPER_DB_PATH, False)
             self.SERVERS = self.db.get('servers')
@@ -39,7 +38,6 @@ class Server(Resource):
     def create_cluster(self,serverDict):
         print "\nGetting machines to be created"
         self.required_nodes = serverDict
-        print self.required_nodes
         print "\nGetting existing nodes in the cluster"
         self.existing_nodes = self.SERVERS
 

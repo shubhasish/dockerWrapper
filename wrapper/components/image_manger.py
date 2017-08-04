@@ -31,6 +31,8 @@ class ImageBuilder(Resource):
         file = request.files['dockerfile']
         file.save(DOCKER_FILE_PATH + 'Dockerfile')
         self.template()
+        image = request.form['image']
+        imageName = "127.0.0.1:5000/%s:latest"%image
         if not self.SERVERS:
             return Response("Check if you have already initialized cluster", mimetype='text/xml')
         self.registry = [x for x in self.SERVERS.keys() if x == "registry"][0]
@@ -38,10 +40,11 @@ class ImageBuilder(Resource):
         tlsConfig = tls.getTLSconfig(self.registry)
         cli = APIClient(base_url=self.SERVERS[self.registry]['url'],tls=tlsConfig)
         imagesList =[x['RepoTags'][0] for x in cli.images()]
-        if "registry:5000/ignite:latest" in imagesList:
-            cli.remove_image("registry:5000/ignite:latest")
+
+        if imageName in imagesList:
+            cli.remove_image(imageName)
         def build_stream():
-            for line in cli.build(path=DOCKER_FILE_PATH,dockerfile="Dockerfile",stream=True,rm=True,tag="registry:5000/ignite"):
+            for line in cli.build(path=DOCKER_FILE_PATH,dockerfile="Dockerfile",stream=True,rm=True,tag=imageName):
                 # m = ast.literal_eval(line)
                 # print m
                 if "error" in line:

@@ -2,12 +2,13 @@ import docker
 from copy import deepcopy
 import yaml
 from config import getClient
-from config import WRAPPER_DB_PATH
+from config import WRAPPER_DB_PATH, DEPLOYMENT_FILE_PATH
 from modules.fileFormatter import File
 import os
 import  time
 from flask_restful import Resource, request
 import pickledb
+from flask import Response
 
 class Deployment(Resource):
     def template(self):
@@ -26,14 +27,35 @@ class Deployment(Resource):
         self.masterMachine = getClient(self.master,self.SERVERS[self.master]['url'])
         self.serviceList = { x.name: x.id for x in self.listServices()}
 
-
+    def helloWorld(self):
+        print "Inside"
+        yield "Hello World"
     def post(self):
         self.template()
-        postJson = request.get_json()
-        self.serviceName = postJson['serviceName']
-        self.services = postJson['contents']
+        # postJson = request.get_json()
+        file = request.files['deploymentFile']
+        self.serviceName = request.form['serviceName']
+
+        file.save(DEPLOYMENT_FILE_PATH + 'compose.yaml')
+        # return "ok"
+        # self.serviceName = postJson['serviceName']
+        # self.services = postJson['contents']
+        self.yml = yaml.load(open(DEPLOYMENT_FILE_PATH + 'compose.yaml', 'r+'))
+        self.services = self.yml['services']
+        # print "Befor Deploy"
+        #
+        # def helloWorld():
+        #     print "Inside"
+        #     yield "Hello World"
+        # def deploy():
+        #     print "Before function"
+        #     helloWorld()
+        #
         message = self.deployService()
         return {'message':message}
+        # generator = deploy()
+        # return Response(generator,mimetype='text/plain')
+
 
     def deployService(self):
         # self.yml = yaml.load(open(path, 'r+'))
@@ -72,8 +94,11 @@ class Deployment(Resource):
         self.network = self.createNetwork()
         servicesDict = self.getServicesList()
         for service in servicesDict.keys():
-            self.createService(servicesDict[service])
-        return "Hello"
+            try:
+                self.createService(servicesDict[service])
+            except Exception as e:
+                return e.message
+        return "All Services Deployed Successfully"
 
 ##---------------------------------------------- Separate API for build ----------------------------#
         #     if "build" in servicesDict[service]:
@@ -155,10 +180,10 @@ class Deployment(Resource):
         service.remove()
 
     def createService(self,dict):
-        if 'network' in dict:
-            dict['networks'].append('icarus')
-        else:
-            dict['networks'] = ['icarus']
+        # if 'network' in dict:
+        #     dict['networks'].append('icarus')
+        # else:
+        #     dict['networks'] = ['icarus']
         image = dict.pop('image')
         if 'build' in dict:
             dict.pop('build')
