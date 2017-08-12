@@ -24,7 +24,6 @@ class Monitoring(Resource):
 
         self.machine = Machine(DM_URL)
 
-
     def deployTelegraf(self):
         kwargs = {"constraints":["node.role==manager"],"name":"telegraf","networks":["icarus"],"mounts":["~/telegraf.conf:/etc/telegraf/telegraf.conf","/var/run/docker.sock:/var/run/docker.sock"]}
 
@@ -42,3 +41,11 @@ class Monitoring(Resource):
         print "\n\nDeploying Telegraf as a service"
         service = self.deployTelegraf()
         print "\nTelegraf deployed as a service with id %s" % service.short_id
+
+    def deployUI(self):
+        kwargs = {"name":"portainer","args":["-H","unix:///var/run/docker.sock"],"constraints":["node.role == manager"],"endpoint_spec":docker.types.EndpointSpec(mode='vip',ports={9000:9000}),"mounts":["//var/run/docker.sock://var/run/docker.sock"]}
+        try:
+            portainer_service = self.masterMachine.services.create(image="portainer/portainer",**kwargs)
+            return portainer_service
+        except Exception as e:
+            return e

@@ -84,9 +84,11 @@ class RemoveService(Resource):
         return "Wrong Method, Use DELETE instead"
     def post(self):
         return "Wrong Method, Use DELETE instead"
-    def delete(self,name):
-        status = self.deleteService(name)
+    def delete(self):
+        serviceName = request.form['serviceName']
+        status = self.deleteService(serviceName)
         return status
+
     def deleteService(self,serviceName):
         servers = getServers()
         if servers:

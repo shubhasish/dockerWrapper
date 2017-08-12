@@ -42,15 +42,15 @@ class ImageBuilder(Resource):
         imagesList =[x['RepoTags'][0] for x in cli.images()]
 
         if imageName in imagesList:
-            cli.remove_image(imageName)
+            try:
+                cli.remove_image(imageName)
+            except Exception as e:
+                return Response({'status':'failure','message':str(e.message)})
         def build_stream():
             for line in cli.build(path=DOCKER_FILE_PATH,dockerfile="Dockerfile",stream=True,rm=True,tag=imageName):
-                # m = ast.literal_eval(line)
-                # print m
                 if "error" in line:
-                    yield json.loads(line)['error']
+                    yield {'status':'failure','message':json.loads(line)['error']}
                 else:
-                    print line
                     jsonObject = json.loads(line)
 
                     for x in jsonObject.keys():
@@ -91,7 +91,7 @@ class ImagePusher(Resource):
                 push = cli.push(image,stream=True)
                 for line in  push:
                     if "error" in line:
-                        yield json.loads(line)['error']
+                        yield {'status':'failure','message':json.loads(line)['error']}
                     else:
                         jsonObject = json.loads(line)
                         for x in jsonObject.keys():

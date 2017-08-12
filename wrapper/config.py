@@ -30,7 +30,7 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
             'service_get':'/v1/api/service/<name>',
             'service_task':'/v1/api/service/tasks/<name>',
             'service_update':'/v1/api/service/update',
-            'service_remove':'/v1/api/service/remove/<name>',
+            'service_remove':'/v1/api/service/remove',
             'build':'/v1/api/image/build',
             'registry':'/v1/api/registry',
             'image_push':'/v1/api/image/push'}
