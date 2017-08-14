@@ -6,7 +6,7 @@ import pickledb
 def getMaster():
     try:
         db = pickledb.load(WRAPPER_DB_PATH,False)
-        masterNode = db.get('Master')
+        masterNode = db.get("Master")
         return masterNode
     except Exception as e:
         print e
@@ -15,14 +15,14 @@ def getMaster():
 def getServers():
     try:
         db = pickledb.load(WRAPPER_DB_PATH,False)
-        servers = db.get('servers')
+        servers = db.get("servers")
         return servers
     except Exception as e:
         print e
     return None
 
 def nodeFormater(node):
-    return {'id':node.id,'short_id':node.short_id,'attrs':node.attrs,'version':node.version}
+    return {"id":node.id,"short_id":node.short_id,"attrs":node.attrs,"version":node.version}
 
 class ListNodes(Resource):
 
@@ -39,29 +39,29 @@ class ListNodes(Resource):
         if servers:
             masterList = getMaster()
             if masterList:
-                url = servers[masterList[0]]['url']
+                url = servers[masterList[0]]["url"]
                 name = masterList[0]
                 client = getClient(name,url)
                 nodes = client.nodes.list()
 
-                return {'status':'success','message':[nodeFormater(x) for x in nodes]}
+                return {"status":"success","message":[nodeFormater(x) for x in nodes]}
             else:
-                return {'status':'failure','message':'Swarm has not been initialized. Please initialize swarm'}
+                return {"status":"failure","message":"Swarm has not been initialized. Please initialize swarm"}
         else:
-            return {'status':'failure','message':'No servers found registered with this Agent. Please Initialize nodes using \'wrapper create\''}
+            return {"status":"failure","message":"No servers found registered with this Agent. Please Initialize nodes using \"wrapper create\""}
 
 
 class GetNodes(Resource):
 
     def post(self):
         details = request.get_json()
-        node = details['node']
+        node = details["node"]
         print type(node)
         nodeDetails = self.getNode(node)
         return nodeDetails
 
     def get(self):
-        return 'Wrong Method, Use POST instead'
+        return "Wrong Method, Use POST instead"
 
     def getNode(self,node):
 
@@ -70,24 +70,24 @@ class GetNodes(Resource):
             masterList = getMaster()
 
             if masterList:
-                url = servers[masterList[0]]['url']
+                url = servers[masterList[0]]["url"]
                 name = masterList[0]
                 client = getClient(name, url)
                 details = client.nodes.get(node)
-                return {'status': 'success', 'message': nodeFormater(details)}
+                return {"status": "success", "message": nodeFormater(details)}
             else:
-                return {'status': 'failure', 'message': 'Swarm has not been initialized. Please initialize swarm'}
+                return {"status": "failure", "message": "Swarm has not been initialized. Please initialize swarm"}
         else:
-            return {'status': 'failure',
-                    'message': 'No servers found registered with this Agent. Please Initialize nodes using \'wrapper create\''}
+            return {"status": "failure",
+                    "message": "No servers found registered with this Agent. Please Initialize nodes using \"wrapper create\""}
 
 
 class UpdateNodes(Resource):
 
     def post(self):
         details = request.get_json()
-        node = details['node']
-        specifications= details['specs']
+        node = details["node"]
+        specifications= details["specs"]
         updateStatus = self.updateNode(node,specifications)
         return updateStatus
 
@@ -98,10 +98,10 @@ class UpdateNodes(Resource):
     def updateNode(self,node,specification):
         getNode = GetNodes()
         node = getNode.getNode(node)
-        if node['status'] == "failure":
+        if node["status"] == "failure":
             return node
         try:
-            node['message'].update(specification)
-            return {'status':'success','message':'Node Updated Successfully'}
+            node["message"].update(specification)
+            return {"status":"success","message":"Node Updated Successfully"}
         except Exception as e:
-            return {'status':'failure','message':e}
+            return {"status":"failure","message":e}

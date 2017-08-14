@@ -33,6 +33,7 @@ class Server(Resource):
         self.template()
         serverDict = request.get_json()
         self.create_cluster(serverDict)
+
         return {x:self.SERVERS[x] for x in serverDict.keys()}
 
     def create_cluster(self,serverDict):
@@ -77,6 +78,7 @@ class Server(Resource):
 
         for node in createList:
             print "\nCreating %s...." % node
+            print self.required_nodes[node]
             self.manager.create(name=node, **self.required_nodes[node])
             #docker.createMachine(name=node, driver=self.config_file[node]['driver'])
             config = CONFIG_FORMATT

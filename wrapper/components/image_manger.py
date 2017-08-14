@@ -16,7 +16,7 @@ import ast
 
 class ImageBuilder(Resource):
     def get(self):
-        return "Wrong Method, Use POST instead"
+        return 'Wrong Method, Use POST instead'
 
     def template(self):
         self.SERVERS = dict()
@@ -32,10 +32,11 @@ class ImageBuilder(Resource):
         file.save(DOCKER_FILE_PATH + 'Dockerfile')
         self.template()
         image = request.form['image']
-        imageName = "127.0.0.1:5000/%s:latest"%image
+        imageName = '127.0.0.1:5000/%s:latest'%image
         if not self.SERVERS:
-            return Response("Check if you have already initialized cluster", mimetype='text/xml')
-        self.registry = [x for x in self.SERVERS.keys() if x == "registry"][0]
+            response = str({'status':'failure','message':'Check if you have already initialized cluster'})
+            return Response(response, mimetype='text/xml')
+        self.registry = [x for x in self.SERVERS.keys() if x == 'registry'][0]
         tls = TLS()
         tlsConfig = tls.getTLSconfig(self.registry)
         cli = APIClient(base_url=self.SERVERS[self.registry]['url'],tls=tlsConfig)
@@ -47,14 +48,14 @@ class ImageBuilder(Resource):
             except Exception as e:
                 return Response({'status':'failure','message':str(e.message)})
         def build_stream():
-            for line in cli.build(path=DOCKER_FILE_PATH,dockerfile="Dockerfile",stream=True,rm=True,tag=imageName):
-                if "error" in line:
+            for line in cli.build(path=DOCKER_FILE_PATH,dockerfile='Dockerfile',stream=True,rm=True,tag=imageName):
+                if 'error' in line:
                     yield {'status':'failure','message':json.loads(line)['error']}
                 else:
                     jsonObject = json.loads(line)
 
                     for x in jsonObject.keys():
-                        if x == "progressDetail" :
+                        if x == 'progressDetail' :
                             continue
                         else:
                             yield jsonObject[x]
@@ -64,7 +65,7 @@ class ImageBuilder(Resource):
 
 class ImagePusher(Resource):
     def get(self):
-        return "Wrong Method, Use POST instead"
+        return 'Wrong Method, Use POST instead'
 
     def template(self):
         self.SERVERS = dict()
@@ -80,8 +81,8 @@ class ImagePusher(Resource):
         image = requestJson['image']
         self.template()
         if not self.SERVERS:
-            return Response("Check if you have already initialized cluster", mimetype='text/xml')
-        self.registry = [x for x in self.SERVERS.keys() if x == "registry"][0]
+            return Response('Check if you have already initialized cluster', mimetype='text/xml')
+        self.registry = [x for x in self.SERVERS.keys() if x == 'registry'][0]
         tls = TLS()
         tlsConfig = tls.getTLSconfig(self.registry)
         cli = APIClient(base_url=self.SERVERS[self.registry]['url'],tls=tlsConfig)
@@ -90,17 +91,17 @@ class ImagePusher(Resource):
             if image in imagesList:
                 push = cli.push(image,stream=True)
                 for line in  push:
-                    if "error" in line:
+                    if 'error' in line:
                         yield {'status':'failure','message':json.loads(line)['error']}
                     else:
                         jsonObject = json.loads(line)
                         for x in jsonObject.keys():
-                            if x == "progressDetail":
+                            if x == 'progressDetail':
                                 continue
                             else:
                                 yield jsonObject[x]
                                 yield '\n'
 
             else:
-                yield {'message':'No such Image Found'}
+                yield {'status':'failure','message':'No such Image Found'}
         return Response(image_pusher(),mimetype='application/json')

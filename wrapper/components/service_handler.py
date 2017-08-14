@@ -27,7 +27,7 @@ def serviceFormater(service):
 class ListServices(Resource):
 
     def post(self):
-        return "Wrong Mehotd, Use GET instead"
+        return 'Wrong Mehotd, Use GET instead'
 
 
     def get(self):
@@ -52,7 +52,7 @@ class ListServices(Resource):
 
 class GetService(Resource):
     def post(self):
-        return "Wrong Method, Use GET instead"
+        return 'Wrong Method, Use GET instead'
 
     def get(self,name):
         service = self.getService(name)
@@ -81,9 +81,9 @@ class GetService(Resource):
 
 class RemoveService(Resource):
     def get(self):
-        return "Wrong Method, Use DELETE instead"
+        return 'Wrong Method, Use DELETE instead'
     def post(self):
-        return "Wrong Method, Use DELETE instead"
+        return 'Wrong Method, Use DELETE instead'
     def delete(self):
         serviceName = request.form['serviceName']
         status = self.deleteService(serviceName)
@@ -98,10 +98,10 @@ class RemoveService(Resource):
                 name = masterList[0]
                 client = getClient(name, url)
                 services = client.services.list()
-                if serviceName == "all":
+                if serviceName == 'all':
                     for service in services:
                         try:
-                            if service.name == "regitry":
+                            if service.name == 'regitry':
                                 continue
                             else:
                                 service.remove()
@@ -118,7 +118,7 @@ class RemoveService(Resource):
                         except Exception as e:
                             return {'status':'failure','message':e.message}
                     else:
-                        return {'status': 'failure', 'message': 'No such service found, Enter a valid service name'}
+                        return {'status': 'success', 'message': 'No such service found, Enter a valid service name'}
             else:
                 return {'status': 'failure', 'message': 'Swarm has not been initialized. Please initialize swarm'}
         else:
@@ -128,7 +128,7 @@ class RemoveService(Resource):
 
 class ListTasks(Resource):
     def post(self):
-        return "Wrong Method, Use GET intead"
+        return 'Wrong Method, Use GET intead'
 
     def get(self,name):
         task = self.getTasks(name)

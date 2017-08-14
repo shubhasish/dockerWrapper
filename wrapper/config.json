@@ -1,8 +1,7 @@
 {
   "master": {
     "role": "manager",
-    "driver": "virtualbox",
-    "memory": 1024
+    "driver": "virtualbox"
   },
   "worker": {
     "driver": "virtualbox",

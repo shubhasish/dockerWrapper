@@ -5,7 +5,6 @@ from flask_restful import Resource
 
 from config import API_DICT
 
-from deployment_handler import Deployment
 from monitoring import Monitoring
 from server_setup import Server
 from swarm_handler import Swarm_Handler
@@ -15,6 +14,7 @@ from service_handler import  ListServices,GetService, ListTasks, RemoveService #
 from nodes_handler import GetNodes, ListNodes, UpdateNodes
 from image_manger import ImageBuilder,ImagePusher
 from registry_handler import RegistryHandler
+
 
 
 class Agent(Resource):

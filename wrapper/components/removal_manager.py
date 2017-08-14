@@ -14,9 +14,9 @@ class RemovalManager(Resource):
         return "Wrong method, Use POST instead"
 
     def post(self):
-        option = request.get_json()['option']
+        option = request.get_json()["option"]
         response = self.removeNodes(option)
-        return {'message':response}
+        return {"message":response}
 
     def __init__(self):
         self.SERVERS = dict()
@@ -24,7 +24,7 @@ class RemovalManager(Resource):
         self.manager = Machine(path=DM_URL)
         try:
             self.db = pickledb.load(WRAPPER_DB_PATH,False)
-            self.SERVERS = self.db.get('servers')
+            self.SERVERS = self.db.get("servers")
         except Exception as e:
             #pass
             pass
@@ -36,7 +36,7 @@ class RemovalManager(Resource):
         if "all" in nodes:
             print "All nodes will  be deleted, and the workspace will be reseted."
             for nodes in self.SERVERS.keys():
-                print "Deleting ...\n%s\t%s" % (nodes, self.SERVERS[nodes]['ip'])
+                print "Deleting ...\n%s\t%s" % (nodes, self.SERVERS[nodes]["ip"])
                 self.manager.rm(nodes, force=True)
             os.remove(WRAPPER_DB_PATH)
             return "Whole cluster is deleted"
@@ -44,10 +44,10 @@ class RemovalManager(Resource):
             print "%s will be deleted"%node
             print "Checking for sanity of node...."
             if node in self.SERVERS:
-                print "Deleting ...\n%s\t%s"%(nodes,self.SERVERS[nodes]['ip'])
+                print "Deleting ...\n%s\t%s"%(nodes,self.SERVERS[nodes]["ip"])
                 self.manager.rm(nodes,force=True)
                 del self.SERVERS[nodes]
-                self.db.set('servers',self.SERVERS)
+                self.db.set("servers",self.SERVERS)
             else:
                 print "%s is not a valid node, no such node is present in cluster"%node
                 continue
