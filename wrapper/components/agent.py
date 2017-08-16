@@ -14,6 +14,8 @@ from service_handler import  ListServices,GetService, ListTasks, RemoveService #
 from nodes_handler import GetNodes, ListNodes, UpdateNodes
 from image_manger import ImageBuilder,ImagePusher
 from registry_handler import RegistryHandler
+from manage import Manager
+from monitoring import Monitoring
 
 
 
@@ -51,11 +53,13 @@ class Agent(Resource):
         api.add_resource(Deployment, API_DICT['deploy'])
         api.add_resource(RegistryHandler,API_DICT['registry'])
         api.add_resource(ImagePusher,API_DICT['image_push'])
+        api.add_resource(Manager, API_DICT['manage'])
+        api.add_resource(Monitoring, API_DICT['monitor'])
 
 
 
 
-        app.run(debug=True, host=self.host,port=self.port,use_reloader=False)
+        app.run(debug=True, host=self.host,port=self.port,use_reloader=True)
 
 
     def shutdown_server(self):

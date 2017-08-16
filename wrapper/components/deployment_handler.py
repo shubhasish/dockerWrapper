@@ -28,9 +28,11 @@ class Deployment(Resource):
             pass
 
 
+    def getMasterMachine(self):
         self.master = [x for x in self.SERVERS.keys() if self.SERVERS[x]['init']][0]
-        print '\nMaster Node of this cluster: %s'%self.master
-        self.masterMachine = getClient(self.master,self.SERVERS[self.master]['url'])
+        print '\nMaster Node of this cluster: %s' % self.master
+        self.masterMachine = getClient(self.master, self.SERVERS[self.master]['url'])
+
 
     def deployment_file_loader(self,file_path):
         yml = yaml.load(open(file_path))
@@ -103,9 +105,15 @@ class Deployment(Resource):
         print 'Post Received'
         self.template()
 
+        if self.SERVERS == None:
+            str({'status': 'failure', 'message': 'No servcers found, Initialize a swarm cluster.'})
+
+        self.getMasterMachine()
 
         file = request.files['deploymentFile']
         file.save(self.file_path)
+
+
 
         self.serviceName = request.form['serviceName']
         print 'Starting to Deploy %s component'%self.serviceName
@@ -295,7 +303,7 @@ class Deployment(Resource):
             if 'context' in buildObject:
                 build_args['path'] = (buildObject['context'])
             else:
-                print 'Please provide with the build context path by mentioning 'context' under build tag'
+                print 'Please provide with the build context path by mentioning \'context\' under build tag'
             if 'dockerfile' in buildObject:
                 build_args['dockerfile'] = (buildObject['dockerfile'])
             if 'args' in buildObject:
