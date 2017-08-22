@@ -59,7 +59,7 @@ class Agent(Resource):
 
 
 
-        app.run(debug=True, host=self.host,port=self.port,use_reloader=True)
+        app.run(debug=True, host=self.host,port=self.port,use_reloader=False)
 
 
     def shutdown_server(self):

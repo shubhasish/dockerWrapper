@@ -4,7 +4,7 @@ import copy
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from config import CONFIG_FORMATT, API_DICT
+from config import CONFIG_FORMATT, API_DICT, WRAPPER_DB_PATH
 
 from content import MAIN_HELP
 from content import DEPLOY_HELP
@@ -26,6 +26,7 @@ from components.swarm_handler import Swarm_Handler
 from components.deployment_handler import Deployment
 from components.agent import Agent
 import sys
+import pickledb
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -161,10 +162,31 @@ elif arguments[1].lower() == "wrapup":
 ###### Agnet Module
 elif arguments[1] == "agent":
     if arguments[2] == "start":
-        agent = Agent()
+        options = arguments[3:]
+        if len(options)==0:
+            print "Please provide configuration"
+            os._exit(0)
+        host = None
+        port = None
+
+        for i,option in enumerate(options):
+            if option == "--host":
+                host = options[i+1]
+            elif option == "--port":
+                port = options[i+1]
+        db = pickledb.load(WRAPPER_DB_PATH, False)
+        db.set('host',host)
+        db.set('port',port)
+        db.dump()
+
+        agent = Agent(host=host,port=int(port))
         agent.startAgent()
     if arguments[2] == "stop":
-        url = 'http://127.0.0.1:5000'+\
+        db = pickledb.load(WRAPPER_DB_PATH,False)
+        host = db.get('host')
+        port = db.get('port')
+
+        url = 'http://%s:%s'%(host,port)+\
               API_DICT['shutdown']
         requests.post(url)
 
