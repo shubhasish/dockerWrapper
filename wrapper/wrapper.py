@@ -106,16 +106,15 @@ elif arguments[1] == "deploy":
     if any(x in options for x in helpSet):
         print DEPLOY_HELP
         os._exit(0)
+    path = None
     for index,option in enumerate(options):
-
         if any(option == x for x in ['-p','--path']):
             try:
                 file = options[index+1]
 
                 if fileChecker(options[index+1],('yaml','yml')):
-                    deployOption = options[len(options) - 1]
-                    create_req = RequestHandler()
-                    create_req.deployHandler(path=options[index+1],deployOption=deployOption)
+                    path = options[index+1]
+
                     # deploy = Deployment()
                     # deploy = deploy.deployService(path=options[index+1],option=deployOption)
                 else:
@@ -126,7 +125,11 @@ elif arguments[1] == "deploy":
                 print PATH_ERROR
                 os._exit(1)
         else:
+            continue
             print "Enter a valid deployment options, Use 'wrapper deploy --help' for more info"
+    deployOption = options[len(options) - 1]
+    create_req = RequestHandler()
+    create_req.deployHandler(path=path, deployOption=deployOption)
 
 ######## Redeploy module
 elif arguments[1] == "redeploy":

@@ -12,6 +12,7 @@ class Monitoring(Resource):
     def template(self):
 
         self.file = File()
+        self.SERVERS = None
         try:
             self.db = pickledb.load(WRAPPER_DB_PATH, False)
             self.SERVERS = self.db.get('servers')
@@ -58,7 +59,6 @@ class Monitoring(Resource):
         file.write(telegraf_conf)
         file.close()
         self.template()
-
         if self.SERVERS == None:
             response = str({'status': 'failure', 'message': 'No servers found, Initialize a swarm cluster.'})
             return Response(response,mimetype='application/json')

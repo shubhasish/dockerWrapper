@@ -7,20 +7,20 @@ services:
 
     image: shubhashish/emq
     container_name: emq
-    network_mode: "host"
+#    network_mode: "host"
 
-  Ignite:
-    image: ignite
-    container_name: ignite
-    network_mode: "host"
-    build:
-      context: /home/subhasishp/PycharmProjects/dockerWrapper/wrapper/composer
-      dockerfile: ignite_dockerfile
+  pythonclient:
+    image: shubhashish/emqconnector
+    container_name: emqconnector
+#    network_mode: "host"
+#    build:
+#      context: /home/subhasishp/PycharmProjects/dockerWrapper/wrapper/composer
+#      dockerfile: ignite_dockerfile
 #    ports:
 #     - "3000:3000"
-  Mongo:
+  mongo:
     image: mongo
     container_name: mongo
-    network_mode: "host"
+#    network_mode: "host"
     ports:
      - "27017:27017"

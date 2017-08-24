@@ -24,3 +24,4 @@ class RequestHandler:
         url = "http://%s:%s%s" % (self.host, self.port, config.API_DICT['deploy'])
         r = requests.post(url=url, data=data,files=fileName)
         return r.status_code
+        # print "Ok"
