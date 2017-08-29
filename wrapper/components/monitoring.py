@@ -67,9 +67,13 @@ class Monitoring(Resource):
 
         def deploy(servers):
             yield "Transfering Telegraf Config files to target servers\n\n"
+            print "transfering Files"
             for server in servers:
                 yield "Copying Config file to the servers %s\n\n"%server
-                self.copyConfigFile(server)
+                try:
+                    self.copyConfigFile(server)
+                except Exception as e:
+                    print e
             yield "Starting Telegraf Service\n\n"
 
             telegraf = self.deployTelegraf()
