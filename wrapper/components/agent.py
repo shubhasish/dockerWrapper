@@ -16,6 +16,7 @@ from image_manger import ImageBuilder,ImagePusher
 from registry_handler import RegistryHandler
 from manage import Manager
 from monitoring import Monitoring
+from autoSacling import Horizontal
 
 
 
@@ -55,6 +56,7 @@ class Agent(Resource):
         api.add_resource(ImagePusher,API_DICT['image_push'])
         api.add_resource(Manager, API_DICT['manage'])
         api.add_resource(Monitoring, API_DICT['monitor'])
+        api.add_resource(Horizontal,API_DICT['hori_scale'])
 
 
 

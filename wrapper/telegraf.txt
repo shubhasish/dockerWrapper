@@ -73,7 +73,7 @@
   logfile = ""
 
   ## Override default hostname, if empty use os.Hostname()
-  hostname = ""
+  hostname = "$$HOSTNAME$$"
   ## If set to true, do no set the "host" tag in the telegraf agent.
   omit_hostname = false
 
@@ -673,7 +673,7 @@
 
 
 # Read metrics about system load & uptime
-[[inputs.system]]
+#[[inputs.system]]
   # no configuration
 
 
@@ -2260,22 +2260,21 @@
 
 
 # # Read metrics from MQTT topic(s)
-# [[inputs.mqtt_consumer]]
-#   servers = ["localhost:1883"]
+[[inputs.mqtt_consumer]]
+   servers = ["EMQ:1883"]
 #   ## MQTT QoS, must be 0, 1, or 2
-#   qos = 0
+   qos = 0
 #
 #   ## Topics to subscribe to
-#   topics = [
-#     "telegraf/host01/cpu",
+   topics = ["temperature"]
 #     "telegraf/+/mem",
 #     "sensors/#",
-#   ]
+
 #
 #   # if true, messages that can't be delivered while the subscriber is offline
 #   # will be delivered when it comes back (such as on service restart).
 #   # NOTE: if true, client_id MUST be set
-#   persistent_session = false
+   persistent_session = false
 #   # If empty, a random client ID will be generated.
 #   client_id = ""
 #
@@ -2294,7 +2293,7 @@
 #   ## Each data format has its own unique set of configuration options, read
 #   ## more about them here:
 #   ## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
-#   data_format = "influx"
+   data_format = "influx"
 
 
 # # Read metrics from NATS subject(s)

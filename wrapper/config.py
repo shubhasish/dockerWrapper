@@ -34,7 +34,8 @@ API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
             'service_remove':'/v1/api/wrapper/service/remove',
             'build':'/v1/api/wrapper/image/build',
             'registry':'/v1/api/wrapper/registry',
-            'image_push':'/v1/api/wrapperimage/push'}
+            'image_push':'/v1/api/wrapper/image/push',
+            'hori_scale':'/v1/api/wrapper/horiscale'}
 
 WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
 DOCKER_FILE_PATH = expanduser('~')+ "/.wrapper/build/"

@@ -3,23 +3,20 @@ from copy import deepcopy
 import yaml
 from config import getClient
 from config import WRAPPER_DB_PATH, DEPLOYMENT_FILE_PATH, API_DICT
-from modules.fileFormatter import File
 import os
 from flask_restful import Resource, request
 import pickledb
 from service_handler import RemoveService
 from flask import Response
-import requests
+
+
 
 class Deployment(Resource):
 
 ##----------------------------------------------------------------------------------------
     def template(self):
-        self.file = File()
-        # self.host = 'localhost'
-        # self.port = 5000
-        self.file_path = DEPLOYMENT_FILE_PATH + 'compose.yaml'
 
+        self.file_path = DEPLOYMENT_FILE_PATH + 'compose.yaml'
         try:
             self.db = pickledb.load(WRAPPER_DB_PATH,False)
             self.SERVERS = self.db.get('servers')
@@ -106,12 +103,12 @@ class Deployment(Resource):
         self.template()
 
         if self.SERVERS == None:
-            str({'status': 'failure', 'message': 'No servcers found, Initialize a swarm cluster.'})
+            return {'status': 'failure', 'message': 'No servers found, Initialize a swarm cluster.'}
 
         self.getMasterMachine()
 
-        file = request.files['deploymentFile']
-        file.save(self.file_path)
+        deploymentFile = request.files['deploymentFile']
+        deploymentFile.save(self.file_path)
 
 
 

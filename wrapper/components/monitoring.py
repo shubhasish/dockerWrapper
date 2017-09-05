@@ -30,7 +30,7 @@ class Monitoring(Resource):
     def deployTelegraf(self):
         servicemode = (docker.types.ServiceMode(mode='global'))
 
-        kwargs = {"mode":servicemode,"name":"telegraf","mounts":["/home/docker/telegraf.conf:/etc/telegraf/telegraf.conf","/var/run/docker.sock:/var/run/docker.sock"]}
+        kwargs = {"mode":servicemode,"name":"telegraf","mounts":["/home/docker/telegraf.conf:/etc/telegraf/telegraf.conf","/var/run/docker.sock:/var/run/docker.sock"],"networks":["icarus"]}
 
         try:
             service = self.masterMachine.services.create(image=self.image,**kwargs)
@@ -50,14 +50,14 @@ class Monitoring(Resource):
 
         influxDb = data['influxDB']
 
-        telegraf_conf = open(dir_path+'/telegraf.txt','r+')
+        #telegraf_conf = open(dir_path+'/telegraf.txt','r+')
 
-        telegraf_conf = (telegraf_conf.read()).replace('$$influxdb$$',str(influxDb))
-
-        file = open('telegraf.conf','w+')
-
-        file.write(telegraf_conf)
-        file.close()
+        # telegraf_conf = (telegraf_conf.read()).replace('$$influxdb$$',str(influxDb))
+        #
+        # file = open('telegraf.conf','w+')
+        #
+        # file.write(telegraf_conf)
+        # file.close()
         self.template()
         if self.SERVERS == None:
             response = str({'status': 'failure', 'message': 'No servers found, Initialize a swarm cluster.'})
@@ -65,11 +65,20 @@ class Monitoring(Resource):
 
         self.getMachines()
 
-        def deploy(servers):
+        def deploy(servers,influxDb):
             yield "Transfering Telegraf Config files to target servers\n\n"
             print "transfering Files"
             for server in servers:
                 yield "Copying Config file to the servers %s\n\n"%server
+                conf = open(dir_path + '/telegraf.txt', 'r+')
+                test = conf.read()
+                test = test.replace('$$influxdb$$', str(influxDb))
+                test = test.replace('$$HOSTNAME$$',str(server))
+
+                file = open('telegraf.conf', 'w+')
+
+                file.write(test)
+                file.close()
                 try:
                     self.copyConfigFile(server)
                 except Exception as e:
@@ -78,7 +87,7 @@ class Monitoring(Resource):
 
             telegraf = self.deployTelegraf()
             yield telegraf
-        return Response(deploy(self.SERVERS),mimetype='application/json')
+        return Response(deploy(self.SERVERS,influxDb),mimetype='application/json')
 
 
 
