@@ -1,5 +1,6 @@
 import json
 import os
+import click
 import copy
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -41,11 +42,42 @@ def fileChecker(path,extention):
             return False
     else:
         return False
+
+
+@click.group()
+def cli():
+    pass
 ##### Handler Classes
+
 fileReader = File()
 
+@cli.command()
+@click.option('-p','--path',help="Path of the server configuration file")
+def create():
+    """Command to create docker swarm servers"""
+    os._exit(0)
 
+@cli.command()
+def swarmit():
+    """Command to add or remove the nodes from docker swarm"""
+    os._exit(0)
 
+@cli.command()
+def deploy():
+    """Command to deploy/update a service into swarm cluster the swarm cluster"""
+    os._exit(0)
+
+@cli.command()
+def warpup():
+    """Command to wrapup the swarm cluster created"""
+    os._exit(0)
+
+@cli.group()
+def agent():
+    """Command to Start and stop wrapper application in agent mode"""
+    os._exit(0)
+
+cli()
 ##### Command Line Handler
 number_of_argument = len(sys.argv)
 arguments = sys.argv
