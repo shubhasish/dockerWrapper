@@ -1,6 +1,6 @@
 from config import getClient, dir_path
 from modules.machine import Machine
-from config import DM_URL, WRAPPER_DB_PATH
+from config import DM_URL, WRAPPER_DB_PATH, TELEGRAF_FILE_PATH
 import pickledb
 import docker
 from modules.fileFormatter import File
@@ -39,25 +39,28 @@ class Monitoring(Resource):
             print e
             return str({'status':'failure','message':str(e.message)})
 
+    def createNetwork(self):
+        networks = [x.name for x in self.masterMachine.networks.list()]
+        if 'icarus' in networks:
+            return {'status':'success','message':'Network Already Exists'}
+        else:
+            try:
+                network = self.masterMachine.networks.create('icarus',driver='overlay')
+                return {'status':'success','message':'Custom Network created with id %s'%network.id}
+            except Exception as e:
+                return {'status':'failure','message':str(e.message)}
 
 
     def copyConfigFile(self,server):
-        self.machine.scp('telegraf.conf',server+":~")
+        self.machine.scp(TELEGRAF_FILE_PATH+'telegraf.conf',server+":~")
 
 
     def post(self):
-        data = request.get_json()
 
-        influxDb = data['influxDB']
+        influxDb = request.form['influxDB']
+        telegraf_config = request.files['telegraf']
+        telegraf_config.save(TELEGRAF_FILE_PATH+'telegraf.txt')
 
-        #telegraf_conf = open(dir_path+'/telegraf.txt','r+')
-
-        # telegraf_conf = (telegraf_conf.read()).replace('$$influxdb$$',str(influxDb))
-        #
-        # file = open('telegraf.conf','w+')
-        #
-        # file.write(telegraf_conf)
-        # file.close()
         self.template()
         if self.SERVERS == None:
             response = str({'status': 'failure', 'message': 'No servers found, Initialize a swarm cluster.'})
@@ -70,13 +73,11 @@ class Monitoring(Resource):
             print "transfering Files"
             for server in servers:
                 yield "Copying Config file to the servers %s\n\n"%server
-                conf = open(dir_path + '/telegraf.txt', 'r+')
+                conf = open(TELEGRAF_FILE_PATH+'telegraf.txt', 'r+')
                 test = conf.read()
                 test = test.replace('$$influxdb$$', str(influxDb))
                 test = test.replace('$$HOSTNAME$$',str(server))
-
-                file = open('telegraf.conf', 'w+')
-
+                file = open(TELEGRAF_FILE_PATH+'telegraf.conf', 'w+')
                 file.write(test)
                 file.close()
                 try:
@@ -84,7 +85,7 @@ class Monitoring(Resource):
                 except Exception as e:
                     print e
             yield "Starting Telegraf Service\n\n"
-
+            self.createNetwork()
             telegraf = self.deployTelegraf()
             yield telegraf
         return Response(deploy(self.SERVERS,influxDb),mimetype='application/json')

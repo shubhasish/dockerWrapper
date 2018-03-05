@@ -1,4 +1,5 @@
 import os
+import sys
 import pickledb
 from modules.fileFormatter import File
 from config import DM_URL
@@ -8,15 +9,12 @@ from modules.machine import Machine
 from flask_restful import request,Resource
 from flask import Response
 
+import logging
+
+logging.basicConfig(format='%(levelname)s: %(message)s',stream=sys.stdout, level=logging.INFO)
+
+
 class RemovalManager(Resource):
-
-    def get(self):
-        return "Wrong method, Use POST instead"
-
-    def post(self):
-        option = request.get_json()["option"]
-        response = self.removeNodes(option)
-        return {"message":response}
 
     def __init__(self):
         self.SERVERS = dict()
@@ -29,28 +27,28 @@ class RemovalManager(Resource):
             #pass
             pass
 
-    def removeNodes(self,nodes=["all"]):
+    def removeNodes(self,node):
         if not self.SERVERS:
             return "Check if you have already initialized cluster"
 
-        if "all" in nodes:
-            print "All nodes will  be deleted, and the workspace will be reseted."
+        if node=="all":
+            logging.info("All nodes will  be deleted, and the workspace will be reseted.")
             for nodes in self.SERVERS.keys():
-                print "Deleting ...\n%s\t%s" % (nodes, self.SERVERS[nodes]["ip"])
+                logging.info("Deleting ...\n%s\t%s" % (nodes, self.SERVERS[nodes]["ip"]))
                 self.manager.rm(nodes, force=True)
             os.remove(WRAPPER_DB_PATH)
             return "Whole cluster is deleted"
-        for node in nodes:
-            print "%s will be deleted"%node
-            print "Checking for sanity of node...."
+        else:
+            logging.info("%s will be deleted"%node)
+            logging.info("Checking for sanity of node....")
             if node in self.SERVERS:
-                print "Deleting ...\n%s\t%s"%(nodes,self.SERVERS[nodes]["ip"])
-                self.manager.rm(nodes,force=True)
-                del self.SERVERS[nodes]
+                logging.info("Deleting ...\n%s\t%s"%(node,self.SERVERS[node]["ip"]))
+                self.manager.rm(node,force=True)
+                del self.SERVERS[node]
                 self.db.set("servers",self.SERVERS)
             else:
-                print "%s is not a valid node, no such node is present in cluster"%node
-                continue
+                logging.error("No such node is present in cluster")
+
             self.db.dump()
         return "Selected nodes deleted"
 

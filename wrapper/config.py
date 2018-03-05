@@ -16,30 +16,28 @@ CONFIG_FORMATT = {"url":"",
                   "init": False,
                   "swarm": False}
 
-API_DICT = {'shutdown':'/v1/api/wrapper/shutdown',
-            'deploy':'/v1/api/wrapper/deploy',
-            'redeploy':'/v1/api/wrapper/re-deploy',
-            'manage':'/v1/api/wrapper/manage',
-            'monitor':'/v1/api/wrapper/monitor',
-            'create':'/v1/api/wrapper/create',
-            'swarm':'/v1/api/wrapper/swarm',
-            'wrapup':'/v1/api/wrapper/wrapup',
-            'node_list':'/v1/api/wrapper/nodes',
-            'node_update':'/v1/api/wrapper/nodes/update',
-            'node_get':'/v1/api/wrapper/nodes/get',
-            'service_list':'/v1/api/wrapper/service',
-            'service_get':'/v1/api/wrapper/service/<name>',
-            'service_task':'/v1/api/wrapper/service/tasks/<name>',
-            'service_update':'/v1/api/wrapper/service/update',
-            'service_remove':'/v1/api/wrapper/service/remove',
-            'build':'/v1/api/wrapper/image/build',
-            'registry':'/v1/api/wrapper/registry',
-            'image_push':'/v1/api/wrapper/image/push',
-            'hori_scale':'/v1/api/wrapper/horiscale'}
+API_DICT = {'shutdown':'/v2/api/wrapper/shutdown',
+            'deploy':'/v2/api/wrapper/deploy',
+            'redeploy':'/v2/api/wrapper/re-deploy',
+            'manage':'/v2/api/wrapper/manage',
+            'monitor':'/v2/api/wrapper/monitor',
+            'create':'/v2/api/wrapper/create',
+            'swarm':'/v2/api/wrapper/swarm',
+            'wrapup':'/v2/api/wrapper/wrapup',
+            'node_list':'/v2/api/wrapper/nodes',
+            'node_update':'/v2/api/wrapper/nodes/update',
+            'node_get':'/v2/api/wrapper/nodes/get',
+            'service_list':'/v2/api/wrapper/service',
+            'service_get':'/v2/api/wrapper/service/<name>',
+            'service_task':'/v2/api/wrapper/service/tasks/<name>',
+            'service_update':'/v2/api/wrapper/service/update',
+            'service_remove':'/v2/api/wrapper/service/remove',
+            'hori_scale':'/v2/api/wrapper/horiscale'}
 
 WRAPPER_DB_PATH = expanduser('~')+"/.wrapper/key_value/wrapper.db"
 DOCKER_FILE_PATH = expanduser('~')+ "/.wrapper/build/"
 DEPLOYMENT_FILE_PATH = expanduser('~')+ "/.wrapper/deploy/"
+TELEGRAF_FILE_PATH = expanduser('~')+ "/.wrapper/telegraf/"
 
 
 def getClient(name, url):

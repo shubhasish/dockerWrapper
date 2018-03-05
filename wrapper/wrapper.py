@@ -1,45 +1,35 @@
-import json
 import os
+import sys
 import click
-import copy
+import logging
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from config import CONFIG_FORMATT, API_DICT, WRAPPER_DB_PATH
 
-from content import MAIN_HELP
-from content import DEPLOY_HELP
-from content import WRAPUP_HELP
-from content import CREATE_HELP
-from content import SWARMIT_HELP
-from content import REDEPLOY_HELP
-from content import PATH_ERROR
+logging.basicConfig(format='%(levelname)s: %(message)s',stream=sys.stdout, level=logging.INFO)
 
-
-from modules.dockerMachine import dockerMachine
 from modules.fileFormatter import File
-from modules.swarm import Swarm
 from API_connector import RequestHandler
 
 from components.removal_manager import RemovalManager
 from components.server_setup import Server
 from components.swarm_handler import Swarm_Handler
-from components.deployment_handler import Deployment
 from components.agent import Agent
-import sys
 import pickledb
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-helpSet = set(['--h','--help','help','-h'])
 
 
-def fileChecker(path,extention):
+
+def getAgentConfig():
+    db = pickledb.load(WRAPPER_DB_PATH, False)
+    return (db.get('host'),db.get('port'))
+
+def fileChecker(path):
     if os.path.isfile(path):
-        if any(x in path for x in extention):
-            return True
-        else:
-            return False
+        return True
     else:
         return False
 
@@ -53,177 +43,173 @@ fileReader = File()
 
 @cli.command()
 @click.option('-p','--path',help="Path of the server configuration file")
-def create():
-    """Command to create docker swarm servers"""
-    os._exit(0)
+@click.option('--agenthost',help="Host of the Wrapper Agent")
+@click.option('--agentport',help="Port of the Wrapper Agent")
+def create(path,agenthost,agentport):
+    """Command to create docker nodes"""
+    absolute_path = os.path.abspath(path)
+    if agenthost and agentport:
+        logging.info("Using the Host and Port passed through CLI for wrapper agent")
+        req_handler = RequestHandler(agenthost,agentport)
+        file = fileReader.readFile(absolute_path)
+        req_handler.createRequestHandler(file)
+    else:
+        if fileChecker(absolute_path):
+            try:
+                logging.info("Reading Configuration File")
+                logging.info("Creating docker-swarm nodes")
+                server = Server()
+                file = fileReader.readFile(absolute_path)
+                server.create_cluster(file)
+
+            except Exception as e:
+                logging.error(e.message)
+                logging.error("Exiting Cluster Creation Process")
+                os._exit(1)
+
+        else:
+            logging.error("No such file found")
+
 
 @cli.command()
-def swarmit():
+@click.option('--clustername',help="Name of the swarm cluster")
+@click.option('--agenthost',help="Host of the Wrapper Agent")
+@click.option('--agentport',help="Port of the Wrapper Agent")
+def swarmit(agenthost,agentport,clustername):
     """Command to add or remove the nodes from docker swarm"""
-    os._exit(0)
+    if agenthost and agentport:
+        logging.info("Using the Host and Port passed through CLI for wrapper agent")
+        swrm_handler = RequestHandler(agenthost,agentport)
+        swrm_handler.swarmRequestHandler(clustername)
+    else:
+        swarm = Swarm_Handler()
+        result = swarm.checkNswarm(clustername)
+
 
 @cli.command()
-def deploy():
+@click.option('--service',help="Name of the service")
+@click.option('--all',is_flag=True,default=False,help="Deploy all services")
+@click.option('--agenthost',help="Host of the Wrapper Agent")
+@click.option('--agentport',help="Port of the Wrapper Agent")
+@click.option('--path',help="Path of deployment yaml file")
+def deployService(service,all,agenthost,agentport,path):
     """Command to deploy/update a service into swarm cluster the swarm cluster"""
-    os._exit(0)
-
-@cli.command()
-def warpup():
-    """Command to wrapup the swarm cluster created"""
-    os._exit(0)
-
-@cli.group()
-def agent():
-    """Command to Start and stop wrapper application in agent mode"""
-    os._exit(0)
-
-cli()
-##### Command Line Handler
-number_of_argument = len(sys.argv)
-arguments = sys.argv
-
-##### Help Module
-if any(arguments[1].lower()==x for x in helpSet):
-    print MAIN_HELP
-
-##### Create Module
-elif arguments[1] == "create":
-    options = arguments[2:]
-
-    for index,option in enumerate(options):
-        if any(x in options for x in helpSet):
-            print CREATE_HELP
-            os._exit(0)
-        elif any(option == x for x in ['-p','--path']):
-            try:
-                file = options[index+1]
-                if fileChecker(file,('json')):
-                    try:
-                        print "Reading Configuration File"
-                        file = fileReader.readFile(file)
-                        create_req = RequestHandler()
-                        create_req.createRequestHandler(file)
-
-                    except Exception as e:
-                        print e
-                        print "Exiting Cluster Creation Process"
-                        os._exit(1)
-                    # setup = Server()
-                    # setup.create_cluster(file)
-                else:
-                    print PATH_ERROR
-                    os._exit(1)
-            except Exception as e:
-                print e
-                print PATH_ERROR
-                os._exit(1)
-        else:
-            print "Enter a valid create options, Use 'wrapper create --help' for more info."
-            os._exit(0)
-
-##### Swarm Module
-elif arguments[1].lower() == "swarmit":
-    options = arguments[2:]
-    if any(x in options for x in helpSet):
-        print SWARMIT_HELP
-    elif len(options) == 1 and options[0].isalnum():
-        create_req = RequestHandler()
-        create_req.swarmRequestHandler(options[0])
+    absolute_path = os.path.abspath(path)
+    if fileChecker(absolute_path):
+        logging.info("Valid File path")
     else:
-        print "Not a valid swarm function, use 'wrapper swarmit --help' for more details."
-
-##### Deploy Module
-elif arguments[1] == "deploy":
-    options = arguments[2:]
-    if any(x in options for x in helpSet):
-        print DEPLOY_HELP
-        os._exit(0)
-    path = None
-    for index,option in enumerate(options):
-        if any(option == x for x in ['-p','--path']):
-            try:
-                file = options[index+1]
-
-                if fileChecker(options[index+1],('yaml','yml')):
-                    path = options[index+1]
-
-                    # deploy = Deployment()
-                    # deploy = deploy.deployService(path=options[index+1],option=deployOption)
-                else:
-                    print PATH_ERROR
-                    os._exit(1)
-            except Exception as e:
-                print e
-                print PATH_ERROR
-                os._exit(1)
-        else:
-            continue
-            print "Enter a valid deployment options, Use 'wrapper deploy --help' for more info"
-    deployOption = options[len(options) - 1]
-    create_req = RequestHandler()
-    create_req.deployHandler(path=path, deployOption=deployOption)
-
-######## Redeploy module
-elif arguments[1] == "redeploy":
-    if number_of_argument > 2:
-        if any(arguments[2].lower()==x for x in helpSet):
-            print REDEPLOY_HELP
-        elif arguments[2] == "-p" or arguments[2] == "--path":
-            if os.path.isfile(arguments[3]) and (".yaml" in arguments[3] or ".yml" in arguments[3]):
-                try:
-                    deploy = Deployment()
-                    deploy.reDeploy(path=arguments[3],serviceName=arguments[4])
-                except Exception as e:
-                    print e
-            else:
-                print "Not a valid file, provide a valid file path"
-        os._exit(0)
+        logging.error("invalid file path")
+        os._exit(1)
+    serviceName= None
+    if all:
+        serviceName = "all"
     else:
-        print "\nNo path to file is provided. \nProvide a valid file path. Use 'wrapper create --help' for more "
-        os._exit(0)
-
-###### Wrap Up Module
-elif arguments[1].lower() == "wrapup":
-    rm = RemovalManager()
-    options = arguments[2:]
-    if any(x in options for x in helpSet):
-        print WRAPUP_HELP
-        os._exit(0)
-    if len(options)==0:
-        print "\nPlease enter a valid cleanup options, Use 'wrapper wrapUp help' for more info"
-        os._exit(0)
-    print rm.removeNodes(options)
-
-###### Agnet Module
-elif arguments[1] == "agent":
-    if arguments[2] == "start":
-        options = arguments[3:]
-        if len(options)==0:
-            print "Please provide configuration"
-            os._exit(0)
-        host = None
-        port = None
-
-        for i,option in enumerate(options):
-            if option == "--host":
-                host = options[i+1]
-            elif option == "--port":
-                port = options[i+1]
+        serviceName = service
+    if agenthost and agentport:
+        logging.info("Using the Host and Port passed through CLI for wrapper agent")
+        deployment_req = RequestHandler(agenthost,agentport)
+        deployment_req.deployHandler(absolute_path,serviceName)
+    else:
         db = pickledb.load(WRAPPER_DB_PATH, False)
-        db.set('host',host)
-        db.set('port',port)
-        db.dump()
-
-        agent = Agent(host=host,port=int(port))
-        agent.startAgent()
-    if arguments[2] == "stop":
-        db = pickledb.load(WRAPPER_DB_PATH,False)
         host = db.get('host')
         port = db.get('port')
+        if host and port:
+            deployment_req = RequestHandler(host,port)
+            deployment_req.deployHandler(absolute_path,serviceName)
+        else:
+            logging.error("Start your wrapper agent first")
 
-        url = 'http://%s:%s'%(host,port)+\
-              API_DICT['shutdown']
-        requests.post(url)
 
-else:
-    print MAIN_HELP
+    os._exit(0)
+
+@cli.command()
+@click.option('--node',help="Name of the node")
+@click.option("--all",is_flag=True,default=False,help="Remove all nodes")
+def wrapup(node,all):
+    """Command to wrapup the swarm cluster created"""
+    rm = RemovalManager()
+    if all:
+        rm.removeNodes('all')
+    elif node:
+        rm.removeNodes(node)
+    else:
+        logging.error("Enter a valid node name")
+    os._exit(0)
+
+
+@cli.command()
+@click.option('--agenthost',help="Host of the Wrapper Agent")
+@click.option('--agentport',help="Port of the Wrapper Agent")
+def deployPortainer(agenthost,agentport):
+    """Command to deploy Portainer"""
+    if agenthost and agentport:
+        logging.info("Using the Host and Port passed through CLI for wrapper agent")
+        portainer_req = RequestHandler(agenthost,agentport)
+        portainer_req.portainerHandler()
+    else:
+        db = pickledb.load(WRAPPER_DB_PATH, False)
+        host = db.get('host')
+        port = db.get('port')
+        if host and port:
+            portainer_req = RequestHandler(host, port)
+            portainer_req.portainerHandler()
+        else:
+            logging.error("Start your wrapper agent first")
+
+
+@cli.command()
+@click.option('--agenthost',help="Host of the Wrapper Agent")
+@click.option('--agentport',help="Port of the Wrapper Agent")
+@click.option('--path',help="Path of telegraf.txt")
+@click.option('--influxdb',default='loclhost',help="InfluxDB host")
+def deployTelegraf(agenthost,agentport,path,influxdb):
+    """Command to start telegraf agent to collect metrices"""
+    absolute_path = os.path.abspath(path)
+    if fileChecker(absolute_path):
+        logging.info("Valid File path")
+    else:
+        logging.error("invalid file path")
+        os._exit(1)
+
+    if agenthost and agentport:
+        logging.info("Using the Host and Port passed through CLI for wrapper agent")
+        telegraf_req = RequestHandler(agenthost,agentport)
+        telegraf_req.telegrafHandler(absolute_path,influxdb)
+    else:
+        db = pickledb.load(WRAPPER_DB_PATH, False)
+        host = db.get('host')
+        port = db.get('port')
+        if host and port:
+            telegraf_req = RequestHandler(host,port)
+            telegraf_req.telegrafHandler(absolute_path,influxdb)
+        else:
+            logging.error("Start your wrapper agent first")
+
+
+@cli.command()
+@click.option('--host',default="0.0.0.0",help="Host at which to start the Wrapper agent")
+@click.option('--port',default='5000',help="Port at which to start the Wrapper agent")
+def startAgent(host,port):
+    """Command to start the Wrapper agent"""
+    db = pickledb.load(WRAPPER_DB_PATH, False)
+    db.set('host',host)
+    db.set('port',port)
+    db.dump()
+    agent = Agent(host=host,port=int(port))
+    agent.startAgent()
+
+
+@cli.command()
+def stopAgent():
+    """Command to stop the Wrapper agent"""
+    logging.info("Shutting down the local server.")
+    db = pickledb.load(WRAPPER_DB_PATH, False)
+    host = db.get('host')
+    port = db.get('port')
+    url = 'http://%s:%s' % (host, port)+"/v2/api/wrapper/shutdown"
+    requests.post(url)
+    db.rem('host')
+    db.rem('port')
+    db.dump()
+
+cli()

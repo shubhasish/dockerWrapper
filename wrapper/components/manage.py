@@ -24,24 +24,7 @@ class Manager(Resource):
         self.masterMachine = getClient(self.master, self.SERVERS[self.master]['url'])
 
 
-    # def deployTelegraf(self):
-    #     kwargs = {'constraints':['node.role==manager'],'name':'telegraf','networks':['icarus'],'mounts':['~/telegraf.conf:/etc/telegraf/telegraf.conf','/var/run/docker.sock:/var/run/docker.sock']}
-    #
-    #     service = self.masterMachine.services.create(image=self.image,**kwargs)
-    #     return service
-    #
-    #
-    # def copyConfigFile(self):
-    #     self.machine.scp(self.path,self.master+':~')
-    #
-    # def monitor(self,path):
-    #     self.path = path
-    #     print 'Copying telegraf configuration file'
-    #     self.copyConfigFile()
-    #     print '\n\nDeploying Telegraf as a service'
-    #     service = self.deployTelegraf()
-    #     print '\nTelegraf deployed as a service with id %s' % service.short_id
-    #
+
     def post(self):
         print 'Post Received'
         self.template()
@@ -50,7 +33,6 @@ class Manager(Resource):
             response = str({'status': 'failure', 'message': 'No servers found, Initialize a swarm cluster.'})
             return Response(response,mimetype='application/json')
         self.getMasterMachine()
-        
         def deploy():
             yield 'Deploying Portainer\n\n'
             
@@ -67,6 +49,7 @@ class Manager(Resource):
     def deployUI(self):
         kwargs = {'name':'portainer','args':['-H','unix:///var/run/docker.sock'],'constraints':['node.role == manager'],'endpoint_spec':docker.types.EndpointSpec(mode='vip',ports={9000:9000}),'mounts':['//var/run/docker.sock://var/run/docker.sock']}
         try:
+            print "Okay"
             portainer_service = self.masterMachine.services.create(image='portainer/portainer',**kwargs)
             return {'status': 'success', 'message': 'Service deployed successfully with service ID = %s'%portainer_service.id}
         except Exception as e:

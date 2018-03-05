@@ -7,9 +7,15 @@ from config import WRAPPER_DB_PATH
 
 from modules.machine import Machine
 import os
+import sys
 from flask_restful import Resource
 from flask_restful import request
 import pickledb
+
+import logging
+
+logging.basicConfig(format='%(levelname)s: %(message)s',stream=sys.stdout, level=logging.INFO)
+
 
 cmdJson={"join-token_manager":"sudo docker swarm join-token manager",
          "join-token_worker":"sudo docker swarm join-token worker"}
@@ -26,6 +32,8 @@ class Swarm_Handler(Resource):
 
         return {'message':message}
 
+    def __init__(self):
+        self.template()
 
     def template(self):
         self.SERVERS = dict()
@@ -82,51 +90,51 @@ class Swarm_Handler(Resource):
         self.db.set('Master',list(self.masterSet))
         # print self.swarmList
         if len(self.swarmList) > 0:
-            print "Swarm has already been initialized with %s"%self.mainMaster
-            print "Following Nodes are in swarm:"
+            logging.info("Swarm has already been initialized with %s"%self.mainMaster)
+            logging.info("Following Nodes are in swarm:")
             for node in self.swarmList:
-                print "%s \t %s" % (node, self.SERVERS[node]['role'])
+                logging.info("%s \t %s" % (node, self.SERVERS[node]['role']))
             if len(self.masterSet) > 0 or len(self.slaveSet) > 0:
-                print "Following new nodes will be added to the swarm cluster:"
-                print "Masters:"
+                logging.info("Following new nodes will be added to the swarm cluster:")
+                logging.info("Masters:")
                 for node in self.masterSet:
-                    print "%s \t %s" % (node, self.SERVERS[node]['ip'])
-                print "Slaves:"
+                    logging.info("%s \t %s" % (node, self.SERVERS[node]['ip']))
+                logging.info("Slaves:")
                 for node in self.slaveSet:
-                    print "%s \t %s" % (node, self.SERVERS[node]['ip'])
-                print "Obtaining join tokens for swarm....."
+                    logging.info("%s \t %s" % (node, self.SERVERS[node]['ip']))
+                logging.info("Obtaining join tokens for swarm.....")
                 joinTokens = self.getJoinToken(self.mainMaster)
-                print "Joining swarm....."
+                logging.info("Joining swarm.....")
                 masterThread = Thread(target=self.swarm_join, args=(self.masterSet, joinTokens[0], self.mainMaster,))
                 slaveThread = Thread(target=self.swarm_join, args=(self.slaveSet, joinTokens[1], self.mainMaster,))
                 masterThread.start()
                 slaveThread.start()
                 masterThread.join()
                 slaveThread.join()
-                print "Swarm Cluster created Successfully"
-                return "Swarm Cluster created Successfully"
+                logging.info("Swarm Cluster created Successfully")
+                logging.info("Swarm Cluster created Successfully")
             else:
-                print "No new nodes to be added to the swarm cluster"
-                return "No new nodes to be added to the swarm cluster"
+                logging.info("No new nodes to be added to the swarm cluster")
+                logging.info("No new nodes to be added to the swarm cluster")
         else:
-            print "Swarm hasn't been initialized."
-            print "Following new nodes will be added to the swarm cluster:"
-            print "Masters:"
+            logging.info("Swarm hasn't been initialized.")
+            logging.info("Following new nodes will be added to the swarm cluster:")
+            logging.info("Masters:")
             for node in self.masterSet:
-                print "%s \t %s" % (node, self.SERVERS[node]['ip'])
-            print "Slaves:"
+                logging.info("%s \t %s" % (node, self.SERVERS[node]['ip']))
+            logging.info("Slaves:")
             for node in self.slaveSet:
-                print "%s \t %s" % (node, self.SERVERS[node]['ip'])
-            print "Initializing swarm....."
+                logging.info("%s \t %s" % (node, self.SERVERS[node]['ip']))
+            logging.info("Initializing swarm.....")
             self.mainMaster = self.masterSet.pop()
             try:
                 joinTokens = self.swarm_init(self.mainMaster)
             except Exception as e:
-                print e
+                logging.error(e.message)
             finally:
                 self.db.set('servers',self.SERVERS)
                 self.db.dump()
-            print "Joining Swarm....."
+            logging.info("Joining Swarm.....")
 
             masterThread = Thread(target=self.swarm_join,args=(self.masterSet,joinTokens[0],self.mainMaster,))
             slaveThread = Thread(target=self.swarm_join,args=(self.slaveSet,joinTokens[1],self.mainMaster,))
@@ -135,7 +143,7 @@ class Swarm_Handler(Resource):
             masterThread.join()
             slaveThread.join()
 
-            print "Swarm Cluster created Successfully"
+            logging.info("Swarm Cluster created Successfully")
             return "Swarm Cluster created Successfully"
 
 
@@ -159,11 +167,11 @@ class Swarm_Handler(Resource):
                 listen = None
                 if self.SERVERS[node]['role'] == "slave":
                     listen = self.SERVERS[node]['ip'] + ':2378'
-                print "Joining %s \t %s"%(node,self.SERVERS[node]['ip'])
+                logging.info("Joining %s \t %s"%(node,self.SERVERS[node]['ip']))
                 swarm.joinSwarm(ip=ip,token=token,listen=listen)
                 self.SERVERS[node]['swarm'] = deepcopy(True)
             except Exception as e:
-                print e
+                logging.error(e.message)
                 os._exit(1)
             finally:
                 self.db.set('servers',self.SERVERS)
@@ -185,4 +193,5 @@ class Swarm_Handler(Resource):
             workerToken = self.manager.ssh(name,cmd=cmdJson['join-token_worker'],logging=False)
             return (True,managerToken,workerToken)
         except Exception as e:
+            logging.error(e.message)
             return (False,e.message)

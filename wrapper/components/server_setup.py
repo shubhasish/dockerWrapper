@@ -1,4 +1,5 @@
 import os
+import sys
 import copy
 import pickledb
 from config import CONFIG_FORMATT
@@ -11,6 +12,9 @@ from config import WRAPPER_DB_PATH
 from config import dir_path
 from flask_restful import Resource
 from flask_restful import request
+import logging
+
+logging.basicConfig(format='%(levelname)s: %(message)s',stream=sys.stdout, level=logging.INFO)
 
 
 class Server(Resource):
@@ -30,46 +34,47 @@ class Server(Resource):
             pass
 
     def post(self):
-        self.template()
+
         serverDict = request.get_json()
         self.create_cluster(serverDict)
 
         return {x:self.SERVERS[x] for x in serverDict.keys()}
 
     def create_cluster(self,serverDict):
-        print "\nGetting machines to be created"
+        self.template()
+        logging.info("\nGetting machines to be created")
         self.required_nodes = serverDict
-        print "\nGetting existing nodes in the cluster"
+        logging.info("\nGetting existing nodes in the cluster")
         self.existing_nodes = self.SERVERS
 
         if self.existing_nodes and len(self.existing_nodes.keys())>0:
-            print "Following nodes are present in the cluster"
+            logging.info("Following nodes are present in the cluster")
             for node in self.existing_nodes:
-                print "%s \t %s" % (node, self.existing_nodes[node]['role'])
+                logging.info("%s \t %s" % (node, self.existing_nodes[node]['role']))
             requirements = set(self.required_nodes.keys()).difference(set(self.existing_nodes.keys()))
             if len(requirements) > 0:
-                print "Following nodes will be created"
+                logging.info("Following nodes will be created")
                 for node in requirements:
-                    print "%s \t %s" % (node, self.required_nodes[node]['role'])
+                    logging.info("%s \t %s" % (node, self.required_nodes[node]['role']))
                 try:
                     self.createNodes(requirements)
                 except Exception as e:
-                    print e
+                    logging.error(e.message)
                 finally:
                     self.db.dump()
             else:
-                print "No new machines to be created"
+                logging.error("No new machines to be created")
         else:
             self.SERVERS = dict()
-            print "No existing nodes in the cluster"
-            print "\n\nFollowing nodes will be created"
+            logging.info("No existing nodes in the cluster")
+            logging.info("\n\nFollowing nodes will be created")
             for node in self.required_nodes.keys():
-                print "%s \t %s" % (node, self.required_nodes[node]['role'])
+                logging.info("%s \t %s" % (node, self.required_nodes[node]['role']))
 
             try:
                 self.createNodes(self.required_nodes.keys())
             except Exception as e:
-                print e
+                logging.error(e.message)
             finally:
                 self.db.dump()
 
@@ -77,8 +82,8 @@ class Server(Resource):
         docker = dockerMachine()
 
         for node in createList:
-            print "\nCreating %s...." % node
-            print self.required_nodes[node]
+            logging.info("\nCreating %s...." % node)
+            logging.info(self.required_nodes[node])
             self.manager.create(name=node, **self.required_nodes[node])
             #docker.createMachine(name=node, driver=self.config_file[node]['driver'])
             config = CONFIG_FORMATT
