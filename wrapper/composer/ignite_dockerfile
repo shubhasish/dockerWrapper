@@ -1,0 +1,6 @@
+FROM java:alpine
+RUN mkdir application
+COPY ignite_spark_iot-1.0-SNAPSHOT-jar-with-dependencies.jar application
+COPY ignite-config.xml application
+WORKDIR application
+CMD ["java","-cp","ignite_spark_iot-1.0-SNAPSHOT-jar-with-dependencies.jar","org.apache.ignite.iot.IgniteNodeStartup","ignite-config.xml"]

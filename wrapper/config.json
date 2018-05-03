@@ -1,0 +1,14 @@
+{
+  "master": {
+    "role": "manager",
+    "driver": "virtualbox"
+  },
+  "worker": {
+    "driver": "virtualbox",
+    "role": "slave"
+  },
+  "registry": {
+    "driver": "virtualbox",
+    "role": "slave"
+  }
+}
